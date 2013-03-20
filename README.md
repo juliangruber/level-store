@@ -1,4 +1,3 @@
-
 # level-stream
 
 Persist streams in [LevelDB](https://github.com/rvagg/node-levelup).
@@ -27,7 +26,7 @@ fs.createReadStream(__dirname + '/file.txt')
 ## Resuming
 
 When reading fails you might not want to start over again completely but rather resume
-at the last point that worked. When passing `ts : true` as an option you don't only
+after the last chunk you received. First, pass `ts : true` as an option so you don't only
 get the stored chunks but also when they were written:
 
 ```js
