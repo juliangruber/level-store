@@ -1,7 +1,7 @@
 
 # level-stream
 
-Persist streams in [leveldb](https://github.com/rvagg/levelup).
+Persist streams in [LevelDB](https://github.com/rvagg/node-levelup).
 
 ## Usage
 
