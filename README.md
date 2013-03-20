@@ -5,6 +5,8 @@ Persist streams in [leveldb](https://github.com/rvagg/levelup).
 
 ## Usage
 
+Store a file in LevelDB under the key `file` and read it out again:
+
 ```js
 var stream = require('level-stream');
 var levelup = require('levelup');
