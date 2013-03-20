@@ -3,6 +3,8 @@
 
 Persist streams in [LevelDB](https://github.com/rvagg/node-levelup).
 
+[![Build Status](https://travis-ci.org/juliangruber/level-stream.png)](https://travis-ci.org/juliangruber/level-stream)
+
 ## Usage
 
 Store a file in LevelDB under the key `file` and read it out again:
