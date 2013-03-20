@@ -1,0 +1,36 @@
+{
+  "name": "level-stream",
+  "description": "Persist streams in leveldb.",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/juliangruber/level-stream.git"
+  },
+  "homepage": "https://github.com/juliangruber/level-stream",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "dependencies": {
+    "through": "~2.2.7",
+    "duplexer": "0.0.3",
+    "monotonic-timestamp": "0.0.8"
+  },
+  "devDependencies": {
+    "tap": "*",
+    "levelup": "~0.6.2",
+    "rimraf": "~2.1.4"
+  },
+  "keywords": [
+    "leveldb",
+    "levelup",
+    "stream",
+    "persistent"
+  ],
+  "author": {
+    "name": "Julian Gruber",
+    "email": "mail@juliangruber.com",
+    "url": "http://juliangruber.com"
+  },
+  "license": "MIT"
+}
