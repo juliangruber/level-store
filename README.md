@@ -56,6 +56,7 @@ Possible `options` are:
 * `ts (Boolean)` : If true, don't emit raw chunks but rather objects having `ts` and `data` fields.
 * `since (Number)`: When reading, only read data that has been stored after that date.
 Automatically sets `ts` to `true`.
+* `live (Boolen)`: If true, the stream will stay open, emitting new data as it comes in.
 
 ### stream(db)
 
@@ -67,8 +68,8 @@ db.stream('file')
 
 ## TODO
 
-* live streams: `stream.live(...)` should stay open and emit new data.
 * more node-core style API, like `stream(db).createReadStream(key[, opts])`
+* option to replace data instead of only appending
 
 ## Installation
 

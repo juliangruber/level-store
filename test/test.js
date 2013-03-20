@@ -100,7 +100,20 @@ test('resume', function (t, db) {
     });
 });
 
-test('live');
+test('live', function (t, db) {
+  var data = '';
+
+  var ls = stream(db, 'file', { live : true })
+
+  var data = '';
+  ls.pipe(through(function (chunk) {
+    data += chunk;
+    if (data == fixture) t.end();
+  }));
+
+  fs.createReadStream(__dirname + '/fixtures/file.txt')
+  .pipe(stream(db, 'file'));
+});
 
 function test (name, cb) {
   if (!cb) return tap.test(name);

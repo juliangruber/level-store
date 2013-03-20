@@ -1,6 +1,7 @@
 var through = require('through');
 var duplexer = require('duplexer');
 var timestamp = require('monotonic-timestamp');
+var livefeed = require('level-livefeed');
 
 module.exports = stream;
 
@@ -37,8 +38,11 @@ function stream (db, key, opts) {
     var start = key + '!';
     if (opts.since) start += opts.since;
 
-    db.createReadStream({ start : start })
-    .pipe(through(function (chunk) {
+    var rs = opts.live
+      ? livefeed(db, { start : start })
+      : db.createReadStream({ start : start })
+
+    rs.pipe(through(function (chunk) {
       chunk = {
         ts : chunk.key.slice(key.length + 1),
         data : chunk.value
