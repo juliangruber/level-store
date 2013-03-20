@@ -73,7 +73,33 @@ test('event#data listeners', function (t, db) {
     });
 });
 
-test('resume');
+test('timestamps', function (t, db) {
+  fs.createReadStream(__dirname + '/fixtures/file.txt')
+    .pipe(stream(db, 'file'))
+    .on('end', function () {
+      stream(db, 'file', { ts : true })
+      .pipe(through(function (chunk) {
+        t.ok(chunk.ts);
+        t.ok(chunk.data);
+      }))
+      .on('end', t.end.bind(t));
+    });
+});
+
+test('resume', function (t, db) {
+  t.plan(1);
+
+  fs.createReadStream(__dirname + '/fixtures/file.txt')
+    .pipe(stream(db, 'file'))
+    .on('end', function () {
+      stream(db, 'file', { ts : true }).once('data', function (chunk) {
+        stream(db, 'file', { since : chunk.ts }).on('data', function (chunk) {
+          t.ok(chunk);
+        });
+      });
+    });
+});
+
 test('live');
 
 function test (name, cb) {
