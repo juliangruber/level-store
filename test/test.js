@@ -57,7 +57,24 @@ test('extend', function (t, db) {
     });
 });
 
+test('event#data listeners', function (t, db) {
+  fs.createReadStream(__dirname + '/fixtures/file.txt')
+    .pipe(stream(db, 'file'))
+    .on('end', function () {
+      var data = '';
+      stream(db, 'file')
+      .on('data', function (chunk) {
+        data += chunk;
+      })
+      .on('end', function () {
+        t.equal(data, fixture);
+        t.end();
+      });
+    });
+});
+
 test('resume');
+test('live');
 
 function test (name, cb) {
   if (!cb) return tap.test(name);

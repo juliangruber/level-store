@@ -31,12 +31,12 @@ function stream (db, key) {
 
   var dpl = duplexer(input, output);
 
-  var pipe = dpl.pipe;
-  dpl.pipe = function (dest, opts) {
-    pipe.apply(dpl, arguments);
+  dpl.on('newListener', function onListener (type) {
+    if (type != 'data') return;
     db.createValueStream({ start : key + '!' }).pipe(output);
-    return dest;
-  }
+    // maybe remove this line, prevents multiple listeners
+    dpl.removeListener('newListener', onListener);
+  });
 
   return dpl;
 }
