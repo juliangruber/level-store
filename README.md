@@ -6,6 +6,15 @@ A streaming storage engine based on [LevelDB](https://github.com/rvagg/node-leve
 
 [![Build Status](https://travis-ci.org/juliangruber/level-store.png)](https://travis-ci.org/juliangruber/level-store)
 
+It is
+
+* **faster** than the `fs` module
+* **in-process**
+* **local** in contrast to Amazon S3
+* **streaming** from the first byte in contrast to Amazon S3
+* **appending** values when desired
+* **resuming** reads when something failed
+
 ## Usage
 
 Store a file in LevelDB under the key `file` and read it out again:
