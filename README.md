@@ -1,19 +1,17 @@
 # level-store
 
-A streaming storage engine based on [LevelDB](https://github.com/rvagg/node-levelup).
-
-![LevelDB Logo](https://twimg0-a.akamaihd.net/profile_images/3360574989/92fc472928b444980408147e5e5db2fa_bigger.png)
-
-[![Build Status](https://travis-ci.org/juliangruber/level-store.png)](https://travis-ci.org/juliangruber/level-store)
-
-It is
+A streaming storage engine based on [LevelDB](https://github.com/rvagg/node-levelup). It is
 
 * **faster** than the `fs` module
-* **in-process**
 * **local** in contrast to Amazon S3
 * **streaming** from the first byte in contrast to Amazon S3
 * **appending** values when desired
 * **resuming** reads when something failed
+* **in-process**
+
+![LevelDB Logo](https://twimg0-a.akamaihd.net/profile_images/3360574989/92fc472928b444980408147e5e5db2fa_bigger.png)
+
+[![Build Status](https://travis-ci.org/juliangruber/level-store.png)](https://travis-ci.org/juliangruber/level-store)
 
 ## Usage
 
