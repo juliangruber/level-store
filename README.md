@@ -9,17 +9,17 @@ Persist streams in [LevelDB](https://github.com/rvagg/node-levelup).
 Store a file in LevelDB under the key `file` and read it out again:
 
 ```js
-var stream = require('level-stream');
 var levelup = require('levelup');
 var fs = require('fs');
 
 var db = levelup('/tmp/level-stream');
+var streams = require('level-stream')(db);
 
 fs.createReadStream(__dirname + '/file.txt')
-  .pipe(stream(db, 'file'))
+  .pipe(streams.createWriteStream('file'))
   .on('end', function () {
     // file.txt is stored in leveldb now
-    stream(db, 'file').pipe(process.stdout);
+    streams.createReadStream('file').pipe(process.stdout);
   });
 ```
 
@@ -30,7 +30,7 @@ after the last chunk you received. First, pass `ts : true` as an option so you d
 get the stored chunks but also when they were written:
 
 ```js
-stream(db, 'file', { ts : true }).on('data', console.log);
+streams.createReadStream('file', { ts : true }).on('data', console.log);
 // => { ts : 1363783762087, data : <Buffer aa aa> }
 ```
 
@@ -38,18 +38,19 @@ Now you only need store the timestamp of the last read chunk in a variable and y
 resume reading after an error, passing `{ since : ts }`:
 
 ```js
-stream(db, 'file', { since : 1363783762087 }).on('data', console.log);
+streams.createReadStream('file', { since : 1363783762087 }).on('data', console.log);
 // => { ts : 1363783876109, data : <Buffer bb bb> }
 ```
 
 ## API
 
-### stream(db, key[, options])
+### stream(db)
 
-Returns a Duplex Stream.
+Returns a `level-stream` instance.
 
-If you start reading from it it replays the stream stored at `key`.
-If you write to it it persists written data at `key`.
+### stream#createReadStream(key[, opts])
+
+A readable stream that replays the stream stored at `key`.
 
 Possible `options` are:
 
@@ -58,17 +59,17 @@ Possible `options` are:
 Automatically sets `ts` to `true`.
 * `live (Boolen)`: If true, the stream will stay open, emitting new data as it comes in.
 
-### stream(db)
+### stream#createWriteStream(key)
 
-Extend `db` with the `db#stream` so you can do
+A writable stream that persists data written to it under `key`.
 
-```js
-db.stream('file')
-```
+Returns a Duplex Stream.
+
+If you start reading from it it replays the stream stored at `key`.
+If you write to it it persists written data at `key`.
 
 ## TODO
 
-* more node-core style API, like `stream(db).createReadStream(key[, opts])`
 * option to replace data instead of only appending
 
 ## Installation

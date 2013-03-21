@@ -31,9 +31,13 @@ stream.prototype.createReadStream = function (key, opts) {
   var start = key + '!';
   if (opts.since) start += opts.since;
 
+  var cfg = {
+    start : start
+  };
+
   var rs = opts.live
-    ? livefeed(this.db, { start : start })
-    : this.db.createReadStream({ start : start })
+    ? livefeed(this.db, cfg)
+    : this.db.createReadStream(cfg)
 
   return rs.pipe(through(function (chunk) {
     chunk = {
