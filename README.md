@@ -12,13 +12,13 @@ Store a file in LevelDB under the key `file` and read it out again:
 
 ```js
 var Store = require('level-store');
-var request = require('request');
+var fs = require('fs');
 
 var store = Store('/tmp/level-stream');
 
 fs.createReadStream(__dirname + '/file.txt')
   .pipe(store.createWriteStream('file'))
-  .on('end', function () {
+  .on('close', function () {
     // file.txt is stored in leveldb now
     store.createReadStream('file').pipe(process.stdout);
   });
