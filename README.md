@@ -63,11 +63,6 @@ Automatically sets `ts` to `true`.
 
 A writable stream that persists data written to it under `key`.
 
-Returns a Duplex Stream.
-
-If you start reading from it it replays the stream stored at `key`.
-If you write to it it persists written data at `key`.
-
 ## TODO
 
 * option to replace data instead of only appending
