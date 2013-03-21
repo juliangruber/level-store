@@ -104,7 +104,25 @@ test('append', function (t, db) {
   first.end();
 });
 
-test('replace');
+test('replace', function (t, db) {
+  var first = store(db).createWriteStream('key');
+  first.write('foo');
+  first.on('close', function () {
+    var second = store(db).createWriteStream('key');
+    second.write('bar');
+    second.on('close', function () {
+      var data = '';
+      store(db).createReadStream('key')
+      .on('data', function (d) { data += d })
+      .on('end', function () {
+        t.equal(data, 'bar');
+        t.end();
+      })
+    });
+    second.end();
+  });
+  first.end();
+});
 
 function test (name, cb) {
   if (!cb) return tap.test(name);
