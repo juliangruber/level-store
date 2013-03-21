@@ -24,6 +24,18 @@ fs.createReadStream(__dirname + '/file.txt')
   });
 ```
 
+## Live persistence
+
+If you want to persist a stream and read from it at the same time, without reading what didn't get stored yet,
+you can do it like this:
+
+```js
+// first start reading from the stored version
+storage.createReadStream('stream', { live : true }).pipe(someWhere);
+// then put your stream into the store
+stream.pipe(storage.createWriteStream('stream'));
+```
+
 ## Resuming
 
 When reading fails you might not want to start over again completely but rather resume
