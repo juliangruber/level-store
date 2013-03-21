@@ -5,16 +5,16 @@ var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
 var levelUp = require('levelup');
 
-module.exports = stream;
+module.exports = store;
 
-function stream (db) {
-  if (!(this instanceof stream)) return new stream(db);
+function store (db) {
+  if (!(this instanceof store)) return new store(db);
   this.db = typeof db == 'string'
     ? levelUp(db)
     : db;
 }
 
-stream.prototype.createWriteStream = function (key, opts) {
+store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
   var tr = through(function (chunk) {
@@ -42,7 +42,7 @@ stream.prototype.createWriteStream = function (key, opts) {
   return dpl;
 }
 
-stream.prototype.createReadStream = function (key, opts) {
+store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
   var start = key + ' ';
