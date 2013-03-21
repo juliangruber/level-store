@@ -3,12 +3,15 @@ var duplexer = require('duplexer');
 var timestamp = require('monotonic-timestamp');
 var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
+var levelUp = require('levelup');
 
 module.exports = stream;
 
 function stream (db) {
   if (!(this instanceof stream)) return new stream(db);
-  this.db = db;
+  this.db = typeof db == 'string'
+    ? levelUp(db)
+    : db;
 }
 
 stream.prototype.createWriteStream = function (key, opts) {
