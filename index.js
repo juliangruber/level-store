@@ -11,14 +11,12 @@ function stream (db) {
   this.db = db;
 }
 
-// TODO: add end to ranges!
-
 stream.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
   var tr = through(function (chunk) {
     this.queue({
-      key : key + '!' + timestamp(),
+      key : key + ' ' + timestamp(),
       value : chunk
     });
   });
@@ -30,7 +28,8 @@ stream.prototype.createWriteStream = function (key, opts) {
   if (!opts.append) {
     tr.pause();
     deleteRange(this.db, {
-      start : key + '!',
+      start : key + ' ',
+      end : key + '~'
     }, function (err) {
       if (err) dpl.emit('error', err);
       tr.resume();
@@ -43,11 +42,12 @@ stream.prototype.createWriteStream = function (key, opts) {
 stream.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
-  var start = key + '!';
+  var start = key + ' ';
   if (opts.since) start += opts.since;
 
   var cfg = {
-    start : start
+    start : start,
+    end : key + '~'
   };
 
   var rs = opts.live
