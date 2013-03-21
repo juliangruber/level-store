@@ -1,25 +1,26 @@
-# level-stream
+# level-store
 
-Persist streams in [LevelDB](https://github.com/rvagg/node-levelup).
+A streaming storage engine based on [LevelDB](https://github.com/rvagg/node-levelup).
 
-[![Build Status](https://travis-ci.org/juliangruber/level-stream.png)](https://travis-ci.org/juliangruber/level-stream)
+![LevelDB Logo](https://twimg0-a.akamaihd.net/profile_images/3360574989/92fc472928b444980408147e5e5db2fa_bigger.png)
+
+[![Build Status](https://travis-ci.org/juliangruber/level-store.png)](https://travis-ci.org/juliangruber/level-store)
 
 ## Usage
 
 Store a file in LevelDB under the key `file` and read it out again:
 
 ```js
-var levelup = require('levelup');
-var fs = require('fs');
+var Store = require('level-store');
+var request = require('request');
 
-var db = levelup('/tmp/level-stream');
-var streams = require('level-stream')(db);
+var store = Store('/tmp/level-stream');
 
 fs.createReadStream(__dirname + '/file.txt')
-  .pipe(streams.createWriteStream('file'))
+  .pipe(store.createWriteStream('file'))
   .on('end', function () {
     // file.txt is stored in leveldb now
-    streams.createReadStream('file').pipe(process.stdout);
+    store.createReadStream('file').pipe(process.stdout);
   });
 ```
 
@@ -30,7 +31,7 @@ after the last chunk you received. First, pass `ts : true` as an option so you d
 get the stored chunks but also when they were written:
 
 ```js
-streams.createReadStream('file', { ts : true }).on('data', console.log);
+store.createReadStream('file', { ts : true }).on('data', console.log);
 // => { ts : 1363783762087, data : <Buffer aa aa> }
 ```
 
@@ -38,17 +39,19 @@ Now you only need store the timestamp of the last read chunk in a variable and y
 resume reading after an error, passing `{ since : ts }`:
 
 ```js
-streams.createReadStream('file', { since : 1363783762087 }).on('data', console.log);
+store.createReadStream('file', { since : 1363783762087 }).on('data', console.log);
 // => { ts : 1363783876109, data : <Buffer bb bb> }
 ```
 
 ## API
 
-### stream(db)
+### Store(db)
 
-Returns a `level-stream` instance.
+Returns a `level-store` instance.
 
-### stream#createReadStream(key[, opts])
+`db` can either be **a path** under which the data should be stored or **an instance of LevelUp**.
+
+### store#createReadStream(key[, opts])
 
 A readable stream that replays the stream stored at `key`.
 
@@ -59,7 +62,7 @@ Possible `options` are:
 Automatically sets `ts` to `true`.
 * `live (Boolen)`: If `true`, the stream will stay open, emitting new data as it comes in.
 
-### stream#createWriteStream(key[, opts])
+### store#createWriteStream(key[, opts])
 
 A writable stream that persists data written to it under `key`. If something exists under `key`
 already it will be deleted.
@@ -69,16 +72,12 @@ Possible `options` are:
 * `append (Boolean)`: If `true`, possibly already existing data stored under `key` will be appended
 rather than replaced.
 
-## TODO
-
-* option to replace data instead of only appending
-
 ## Installation
 
 With [npm](http://npmjs.org) do
 
 ```bash
-$ npm install level-stream
+$ npm install level-store
 ```
 
 ## License
