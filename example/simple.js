@@ -1,16 +1,11 @@
-var stream = require('..');
-var levelup = require('levelup');
+var Store = require('..');
 var os = require('os');
 var fs = require('fs');
-var rimraf = require('rimraf');
 
-var path = os.tmpDir() + '/level-stream-example';
-
-rimraf.sync(path);
-var db = levelup(path);
+var store = Store(os.tmpDir() + '/level-store-example');
 
 fs.createReadStream(__dirname + '/file.txt')
-  .pipe(stream(db, 'file'))
-  .on('end', function () {
-    stream(db, 'file').pipe(process.stdout);
+  .pipe(store.createWriteStream('file'))
+  .on('close', function () {
+    store.createReadStream('file').pipe(process.stdout);
   });
