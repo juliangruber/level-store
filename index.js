@@ -11,6 +11,8 @@ function stream (db) {
 }
 
 stream.prototype.createWriteStream = function (key, opts) {
+  if (!opts) opts = {};
+
   var tr = through(function (chunk) {
     this.queue({
       key : key + '!' + timestamp(),
