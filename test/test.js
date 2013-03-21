@@ -10,10 +10,10 @@ var fixture = fs.readFileSync(__dirname + '/fixtures/file.txt').toString();
 
 test('level-stream', function (t, db) {
   fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(stream(db, 'file'))
-    .on('end', function () {
+    .pipe(stream(db).createWriteStream('file'))
+    .on('close', function () {
       var data = '';
-      stream(db, 'file')
+      stream(db).createReadStream('file')
       .pipe(through(function (chunk) {
         data += chunk;
       }))
@@ -26,10 +26,10 @@ test('level-stream', function (t, db) {
 
 test('key collisions', function (t, db) {
   fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(stream(db, 'file'))
-    .on('end', function () {
+    .pipe(stream(db).createWriteStream('file'))
+    .on('close', function () {
       var data = '';
-      stream(db, 'file2')
+      stream(db).createReadStream('file2')
       .pipe(through(function (chunk) {
         data += chunk;
       }))
@@ -40,44 +40,11 @@ test('key collisions', function (t, db) {
     });
 });
 
-test('extend', function (t, db) {
-  stream(db);
-  fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(stream(db, 'file'))
-    .on('end', function () {
-      var data = '';
-      db.stream(db, 'file')
-      .pipe(through(function (chunk) {
-        data += chunk;
-      }))
-      .on('end', function () {
-        t.equal(data, fixture);
-        t.end();
-      });
-    });
-});
-
-test('event#data listeners', function (t, db) {
-  fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(stream(db, 'file'))
-    .on('end', function () {
-      var data = '';
-      stream(db, 'file')
-      .on('data', function (chunk) {
-        data += chunk;
-      })
-      .on('end', function () {
-        t.equal(data, fixture);
-        t.end();
-      });
-    });
-});
-
 test('timestamps', function (t, db) {
   fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(stream(db, 'file'))
-    .on('end', function () {
-      stream(db, 'file', { ts : true })
+    .pipe(stream(db).createWriteStream('file'))
+    .on('close', function () {
+      stream(db).createReadStream('file', { ts : true })
       .pipe(through(function (chunk) {
         t.ok(chunk.ts);
         t.ok(chunk.data);
@@ -90,10 +57,12 @@ test('resume', function (t, db) {
   t.plan(1);
 
   fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(stream(db, 'file'))
-    .on('end', function () {
-      stream(db, 'file', { ts : true }).once('data', function (chunk) {
-        stream(db, 'file', { since : chunk.ts }).on('data', function (chunk) {
+    .pipe(stream(db).createWriteStream('file'))
+    .on('close', function () {
+      stream(db).createReadStream('file', { ts : true })
+      .once('data', function (chunk) {
+        stream(db).createReadStream('file', { since : chunk.ts })
+        .on('data', function (chunk) {
           t.ok(chunk);
         });
       });
@@ -103,16 +72,16 @@ test('resume', function (t, db) {
 test('live', function (t, db) {
   var data = '';
 
-  var ls = stream(db, 'file', { live : true })
+  var live = stream(db).createReadStream('file', { live : true });
 
   var data = '';
-  ls.pipe(through(function (chunk) {
+  live.pipe(through(function (chunk) {
     data += chunk;
     if (data == fixture) t.end();
   }));
 
   fs.createReadStream(__dirname + '/fixtures/file.txt')
-  .pipe(stream(db, 'file'));
+  .pipe(stream(db).createWriteStream('file'));
 });
 
 function test (name, cb) {

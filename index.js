@@ -5,58 +5,42 @@ var livefeed = require('level-livefeed');
 
 module.exports = stream;
 
-function stream (db, key, opts) {
-  if (typeof key == 'undefined') {
-    return db.stream = stream.bind(null, db);
-  }
+function stream (db) {
+  if (!(this instanceof stream)) return new stream(db);
+  this.db = db;
+}
 
-  if (!opts) opts = {};
-
-  var writing = false;
-
-  var output = through();
-  var input = through(function (chunk) {
-    if (!writing) {
-      writing = true;
-
-      var ws = db.createWriteStream();
-      ws.on('close', output.end.bind(output));
-      input.pipe(ws);
-    }
-
+stream.prototype.createWriteStream = function (key, opts) {
+  var tr = through(function (chunk) {
     this.queue({
       key : key + '!' + timestamp(),
       value : chunk
-    });
-  });
+    })
+  })
 
-  var dpl = duplexer(input, output);
+  var ws = this.db.createWriteStream();
 
-  dpl.on('newListener', function onListener (type) {
-    if (type != 'data') return;
-   
-    var start = key + '!';
-    if (opts.since) start += opts.since;
+  return duplexer(tr, tr.pipe(ws));
+}
 
-    var rs = opts.live
-      ? livefeed(db, { start : start })
-      : db.createReadStream({ start : start })
+stream.prototype.createReadStream = function (key, opts) {
+  if (!opts) opts = {};
 
-    rs.pipe(through(function (chunk) {
-      chunk = {
-        ts : chunk.key.slice(key.length + 1),
-        data : chunk.value
-      };
-      if (opts.since && chunk.ts == opts.since) return;
-      if (!opts.ts && !opts.since) chunk = chunk.data;
+  var start = key + '!';
+  if (opts.since) start += opts.since;
 
-      this.queue(chunk);
-    }))
-    .pipe(output);
+  var rs = opts.live
+    ? livefeed(this.db, { start : start })
+    : this.db.createReadStream({ start : start })
 
-    // maybe remove this line, prevents multiple listeners
-    dpl.removeListener('newListener', onListener);
-  });
+  return rs.pipe(through(function (chunk) {
+    chunk = {
+      ts : chunk.key.slice(key.length + 1),
+      data : chunk.value
+    };
+    if (opts.since && chunk.ts == opts.since) return;
+    if (!opts.ts && !opts.since) chunk = chunk.data;
 
-  return dpl;
+    this.queue(chunk);
+  }));
 }
