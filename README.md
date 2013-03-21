@@ -14,7 +14,7 @@ Store a file in LevelDB under the key `file` and read it out again:
 var Store = require('level-store');
 var fs = require('fs');
 
-var store = Store('/tmp/level-stream');
+var store = Store('/tmp/level-store');
 
 fs.createReadStream(__dirname + '/file.txt')
   .pipe(store.createWriteStream('file'))
@@ -39,7 +39,7 @@ stream.pipe(storage.createWriteStream('stream'));
 ## Resuming
 
 When reading fails you might not want to start over again completely but rather resume
-after the last chunk you received. First, pass `ts : true` as an option so you don't only
+after the last chunk you received. First, pass `ts : true` as an option when reading, so you don't only
 get the stored chunks but also when they were written:
 
 ```js
