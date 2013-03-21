@@ -54,14 +54,20 @@ A readable stream that replays the stream stored at `key`.
 
 Possible `options` are:
 
-* `ts (Boolean)` : If true, don't emit raw chunks but rather objects having `ts` and `data` fields.
+* `ts (Boolean)`: If `true`, don't emit raw chunks but rather objects having `ts` and `data` fields.
 * `since (Number)`: When reading, only read data that has been stored after that date.
 Automatically sets `ts` to `true`.
-* `live (Boolen)`: If true, the stream will stay open, emitting new data as it comes in.
+* `live (Boolen)`: If `true`, the stream will stay open, emitting new data as it comes in.
 
-### stream#createWriteStream(key)
+### stream#createWriteStream(key[, opts])
 
-A writable stream that persists data written to it under `key`.
+A writable stream that persists data written to it under `key`. If something exists under `key`
+already it will be deleted.
+
+Possible `options` are:
+
+* `append (Boolean)`: If `true`, possibly already existing data stored under `key` will be appended
+rather than replaced.
 
 ## TODO
 

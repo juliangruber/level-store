@@ -84,6 +84,28 @@ test('live', function (t, db) {
   .pipe(stream(db).createWriteStream('file'));
 });
 
+test('append', function (t, db) {
+  var first = stream(db).createWriteStream('key');
+  first.write('foo');
+  first.on('close', function () {
+    var second = stream(db).createWriteStream('key', { append : true });
+    second.write('bar');
+    second.on('close', function () {
+      var data = '';
+      stream(db).createReadStream('key')
+      .on('data', function (d) { data += d })
+      .on('end', function () {
+        t.equal(data, 'foobar');
+        t.end();
+      })
+    });
+    second.end();
+  });
+  first.end();
+});
+
+test('replace');
+
 function test (name, cb) {
   if (!cb) return tap.test(name);
   tap.test(name, function (t) {

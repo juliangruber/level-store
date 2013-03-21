@@ -2,6 +2,7 @@ var through = require('through');
 var duplexer = require('duplexer');
 var timestamp = require('monotonic-timestamp');
 var livefeed = require('level-livefeed');
+var deleteRange = require('level-delete-range');
 
 module.exports = stream;
 
@@ -10,6 +11,8 @@ function stream (db) {
   this.db = db;
 }
 
+// TODO: add end to ranges!
+
 stream.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
@@ -17,12 +20,24 @@ stream.prototype.createWriteStream = function (key, opts) {
     this.queue({
       key : key + '!' + timestamp(),
       value : chunk
-    })
-  })
+    });
+  });
 
   var ws = this.db.createWriteStream();
 
-  return duplexer(tr, tr.pipe(ws));
+  var dpl = duplexer(tr, tr.pipe(ws));
+
+  if (!opts.append) {
+    tr.pause();
+    deleteRange(this.db, {
+      start : key + '!',
+    }, function (err) {
+      if (err) dpl.emit('error', err);
+      tr.resume();
+    });
+  }
+
+  return dpl;
 }
 
 stream.prototype.createReadStream = function (key, opts) {
