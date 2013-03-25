@@ -13,6 +13,8 @@ A streaming storage engine based on [LevelDB](https://github.com/rvagg/node-leve
 
 [![Build Status](https://travis-ci.org/juliangruber/level-store.png)](https://travis-ci.org/juliangruber/level-store)
 
+*Only need in-memory persistence and no resuming? Check out [enstore](https://github.com/juliangruber/enstore).*
+
 ## Usage
 
 Store a file in LevelDB under the key `file` and read it out again:
