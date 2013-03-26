@@ -17,7 +17,8 @@
     "monotonic-timestamp": "0.0.8",
     "level-livefeed": "~0.1.3",
     "level-delete-range": "~0.1.0",
-    "levelUp": "git://github.com/juliangruber/node-levelup#783958daaed48bf8367af1c4977b5e75ae06b9dd"
+    "levelUp": "git://github.com/juliangruber/node-levelup#783958daaed48bf8367af1c4977b5e75ae06b9dd",
+    "level-peek": "~1.0.5"
   },
   "devDependencies": {
     "tap": "*",
