@@ -128,9 +128,10 @@ function test (name, cb) {
   if (!cb) return tap.test(name);
   tap.test(name, function (t) {
     var path = os.tmpDir() + '/'
-    path += Math.random().toString(16).slice(2)
+    path += name 
+    path += Date.now()
     path += '-level-store-test';
-
+    console.log(path)
     cb(t, levelup(path));
   });
 }
