@@ -57,7 +57,6 @@ store.prototype.createWriteStream = function (key, opts) {
       tr.resume();
     });
   } else {
-    console.log('APPEND', key)
     tr.pause();
     peek.last(this.db, {
       reverse: true,
@@ -67,11 +66,9 @@ store.prototype.createWriteStream = function (key, opts) {
       if(err)
         return tr.resume()
       len = unpadHex(_key.substring(key.length + 1))
-      console.log('LEN', len)
       tr.resume()
     });
   }
-
   return dpl;
 }
 
