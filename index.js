@@ -35,15 +35,15 @@ store.prototype.createWriteStream = function (key, opts) {
   var self = this;
   if (!opts) opts = {};
 
-  var length = 0;
+  var bytelength = 0;
 
   var input = through();
 
   var addKey = through(self.index == 'bytelength'
     ? function (chunk) {
-        length += chunk.length;
+        bytelength += chunk.length;
         this.queue({
-          key : key + ' ' + padHex(length),
+          key : key + ' ' + padHex(bytelength),
           value : chunk
         });
       }
@@ -68,7 +68,7 @@ store.prototype.createWriteStream = function (key, opts) {
       start : key + ' ',
       end : key + '~'
     }, function (err, lastKey) {
-      if (!err) length = unpadHex(lastKey.substr(key.length + 1));
+      if (!err) bytelength = unpadHex(lastKey.substr(key.length + 1));
       input.resume();
     });
   } else if (!opts.append) {
