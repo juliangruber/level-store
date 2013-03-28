@@ -28,7 +28,7 @@ indexes.bytelength = function (db, key) {
   var addKey = through(function (chunk) {
     length += chunk.length;
     this.queue({
-      key : key + ' ' + padHex(bytelength),
+      key : key + ' ' + padHex(length),
       value : chunk
     });
   });
