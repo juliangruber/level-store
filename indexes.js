@@ -22,6 +22,47 @@ indexes.timestamp = function (db, key) {
   };
 }
 
+indexes.chunks = function (db, key) {
+  var chunks = 0;
+
+  var addKey = through(function (chunk) {
+    this.queue({
+      key : key + ' ' + padHex(chunks),
+      value : chunk
+    });
+    chunks++;
+  });
+
+  function initialize (cb) {
+    peek.last(db, {
+      reverse : true,
+      start : key + ' ',
+      end : key + '~'
+    }, function (err, lastKey) {
+      if (!err) chunks = unpadHex(lastKey.substr(key.length + 1));
+      cb(null);
+    });
+  }
+
+  function filter (opts) {
+    return through(function (chunk) {
+      chunk = {
+        index : unpadHex(chunk.index.substr(key.length + 1)),
+        data : chunk.data
+      }
+      if (typeof opts.from == 'undefined' || chunk.index > opts.from) {
+        this.queue(chunk);
+      }
+    });
+  }
+
+  return {
+    addKey     : addKey,
+    initialize : initialize,
+    filter     : filter
+  };
+}
+
 indexes.bytelength = function (db, key) {
   var length = 0;
 
@@ -45,7 +86,7 @@ indexes.bytelength = function (db, key) {
   }
 
   return {
-    addKey : addKey,
-    initialize : initialize
+    addKey     : addKey,
+    initialize : initialize,
   };
 }

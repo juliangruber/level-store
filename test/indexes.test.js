@@ -83,7 +83,7 @@ test('bytelength', function (t, db) {
     ws.end();
   });
 
-  t.test('resume', function (t) {
+  /*t.test('resume', function (t) {
     t.plan(2);
     var ws = store.createWriteStream('file');
 
@@ -97,6 +97,50 @@ test('bytelength', function (t, db) {
       .on('end', function () {
         t.equal(data, 'obar');
       });
+    });
+
+    ws.write('foo');
+    ws.write('bar');
+    ws.end();
+  });*/
+});
+
+test('chunks', function (t, db) {
+  var store = Store(db, { index : 'chunks' });
+
+  t.test('store', function (t) {
+    var ws = store.createWriteStream('file');
+
+    ws.on('close', function () {
+      var i = 0;
+      
+      store.createReadStream('file', { index : true })
+      .pipe(through(function (chunk) {
+        if (i++ == 0) {
+          t.equal(chunk.index, 0, 'first chunk');
+        } else {
+          t.equal(chunk.index, 1, 'second chunk');
+          t.end();
+        }
+      }))
+    });
+
+    ws.write('foo');
+    ws.write('bar');
+    ws.end();
+  });
+
+  t.test('resume', function (t) {
+    var ws = store.createWriteStream('file');
+
+    ws.on('close', function () {
+      var data = '';
+
+      store.createReadStream('file', { from : 0 })
+      .pipe(through(function (chunk) {
+        t.equal(chunk.index, 1, 'second chunk');
+        t.end();
+      }))
     });
 
     ws.write('foo');

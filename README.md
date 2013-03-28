@@ -52,8 +52,10 @@ From fastest to slowest:
 * **timestamp**: The default index. Uses timestamps of when a chunk was written.
 **Fast** and already enough for resuming. Activate with
 `Store(db, { index : 'timestamp' })`.
+* **chunks**: The index is the number of chunks already written, starting at `0`.
+Activate with `Store(db, { index : 'chunks' })`.
 * **bytelength**: The index is the bytelength of what has already been written
-under the given `key`. **Slower** but more flexible. Activate with
+under the given `key`. **Slow**, but very flexible. Activate with
 `Store(db, { index : 'bytelength' })`.
 
 ## API

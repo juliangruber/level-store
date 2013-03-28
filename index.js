@@ -61,7 +61,7 @@ store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
   var start = key + ' ';
-  if (opts.from) start += opts.from;
+  if (typeof opts.from != 'undefined') start += opts.from.toString(10);
 
   var cfg = {
     start : start,
@@ -81,12 +81,21 @@ store.prototype.createReadStream = function (key, opts) {
     });
   });
 
+  var filter = index.filter
+    ? index.filter(opts)
+    : through(function (chunk) {
+        if (typeof opts.from == 'undefined' || chunk.index > opts.from) {
+          this.queue(chunk);
+        }
+      });
+
   var removeIndex = through(function (chunk) {
     this.queue(chunk.data);
   });
 
-  var res = rs.pipe(addIndex);
-  if (index.filter) res = res.pipe(index.filter);
-  if (!opts.index && !opts.from) res = res.pipe(removeIndex);
-  return res;
+  var res = rs.pipe(addIndex).pipe(filter);
+
+  return !opts.index && typeof opts.from == 'undefined'
+    ? res.pipe(removeIndex)
+    : res
 }
