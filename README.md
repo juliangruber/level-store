@@ -27,20 +27,20 @@ fs.createReadStream(__dirname + '/file.txt')
 ## Resuming
 
 When reading fails you might not want to start over again completely but rather resume
-after the last chunk you received. First, pass `ts : true` as an option so you don't only
-get the stored chunks but also when they were written:
+after the last chunk you received. First, pass `index : true` as an option so you don't only
+get the stored chunks but also their index in the store:
 
 ```js
-store.createReadStream('file', { ts : true }).on('data', console.log);
-// => { ts : 1363783762087, data : <Buffer aa aa> }
+store.createReadStream('file', { index : true }).on('data', console.log);
+// => { index : 1363783762087, data : <Buffer aa aa> }
 ```
 
 Now you only need store the timestamp of the last read chunk in a variable and you can
-resume reading after an error, passing `{ from : ts }`:
+resume reading after an error, passing `{ from : index }`:
 
 ```js
 store.createReadStream('file', { from : 1363783762087 }).on('data', console.log);
-// => { ts : 1363783876109, data : <Buffer bb bb> }
+// => { index : 1363783876109, data : <Buffer bb bb> }
 ```
 
 ## API
@@ -57,9 +57,9 @@ A readable stream that replays the stream stored at `key`.
 
 Possible `options` are:
 
-* `ts (Boolean)`: If `true`, don't emit raw chunks but rather objects having `ts` and `data` fields.
+* `index (Boolean)`: If `true`, don't emit raw chunks but rather objects having `index` and `data` fields.
 * `from (Number)`: When reading, only read data that has been stored after position `from`.
-Automatically sets `ts` to `true`.
+Automatically sets `index` to `true`.
 * `live (Boolen)`: If `true`, the stream will stay open, emitting new data as it comes in.
 
 ### store#createWriteStream(key[, opts])

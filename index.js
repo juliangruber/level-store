@@ -83,11 +83,11 @@ store.prototype.createReadStream = function (key, opts) {
 
   return rs.pipe(through(function (chunk) {
     chunk = {
-      ts : chunk.key.slice(key.length + 1),
+      index : chunk.key.slice(key.length + 1),
       data : chunk.value
     };
-    if (opts.from && chunk.ts == opts.from) return;
-    if (!opts.ts && !opts.from) chunk = chunk.data;
+    if (opts.from && chunk.index == opts.from) return;
+    if (!opts.index && !opts.from) chunk = chunk.data;
 
     this.queue(chunk);
   }));
