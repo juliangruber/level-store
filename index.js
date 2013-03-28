@@ -33,7 +33,7 @@ store.prototype.createWriteStream = function (key, opts) {
 
   var length = 0;
 
-  var input = through().pause();
+  var input = through();
 
   var addKey
   if (self.opts.timestamps) {
@@ -58,20 +58,18 @@ store.prototype.createWriteStream = function (key, opts) {
 
   input.pipe(addKey).pipe(ws);
 
-  if (opts.append) {
-    if (self.opts.timetamps) {
+  if (opts.append && !self.opts.timestamps) {
+    input.pause();
+    peek.last(self.db, {
+      reverse : true,
+      start : key + ' ',
+      end : key + '~'
+    }, function (err, lastKey) {
+      if (!err) length = unpadHex(lastKey.substr(key.length + 1));
       input.resume();
-    } else {
-      peek.last(self.db, {
-        reverse : true,
-        start : key + ' ',
-        end : key + '~'
-      }, function (err, lastKey) {
-        if (!err) length = unpadHex(lastKey.substr(key.length + 1));
-        input.resume();
-      });
-    }
+    });
   } else {
+    input.pause();
     self.delete(key, function (err) {
       if (err) dpl.emit('error', err);
       input.resume();
