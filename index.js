@@ -1,12 +1,9 @@
 var through = require('through');
 var duplexer = require('duplexer');
-var timestamp = require('monotonic-timestamp');
 var levelUp = require('levelup');
 var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
-var peek = require('level-peek');
-var padHex = require('./util').padHex;
-var unpadHex = require('./util').unpadHex;
+var indexes = require('./indexes');
 
 module.exports = store;
 
@@ -35,49 +32,26 @@ store.prototype.createWriteStream = function (key, opts) {
   var self = this;
   if (!opts) opts = {};
 
-  var bytelength = 0;
+  var index = indexes[self.index](self.db, key);
 
-  var input = through();
-
-  var addKey = through(self.index == 'bytelength'
-    ? function (chunk) {
-        bytelength += chunk.length;
-        this.queue({
-          key : key + ' ' + padHex(bytelength),
-          value : chunk
-        });
-      }
-    : function (chunk) {
-        this.queue({
-          key : key + ' ' + timestamp(),
-          value : chunk
-        });
-      }
-  )
+  var input = through().pause();
 
   var ws = self.db.createWriteStream();
   var dpl = duplexer(input, ws);
 
-  input.pipe(addKey).pipe(ws);
+  input
+    .pipe(index.addKey)
+    .pipe(ws);
 
-  if (opts.append && self.index == 'bytelength') {
-    // find length first
-    input.pause();
-    peek.last(self.db, {
-      reverse : true,
-      start : key + ' ',
-      end : key + '~'
-    }, function (err, lastKey) {
-      if (!err) bytelength = unpadHex(lastKey.substr(key.length + 1));
-      input.resume();
-    });
-  } else if (!opts.append) {
-    // delete what already exists
-    input.pause();
-    self.delete(key, function (err) {
-      if (err) dpl.emit('error', err);
-      input.resume();
-    });
+  if (opts.append) {
+    index.initialize(onReady);
+  } else {
+    self.delete(key, onReady);
+  }
+
+  function onReady (err) {
+    if (err) dpl.emit('error', err);
+    input.resume();
   }
 
   return dpl;
