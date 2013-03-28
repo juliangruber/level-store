@@ -61,6 +61,7 @@ store.prototype.createWriteStream = function (key, opts) {
   input.pipe(addKey).pipe(ws);
 
   if (opts.append && self.index == 'length') {
+    // find length first
     input.pause();
     peek.last(self.db, {
       reverse : true,
@@ -71,6 +72,7 @@ store.prototype.createWriteStream = function (key, opts) {
       input.resume();
     });
   } else if (!opts.append) {
+    // delete what already exists
     input.pause();
     self.delete(key, function (err) {
       if (err) dpl.emit('error', err);
