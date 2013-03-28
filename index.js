@@ -60,8 +60,12 @@ store.prototype.createWriteStream = function (key, opts) {
 store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
+  var index = indexes[this.index](this.db, key);
+
   var start = key + ' ';
-  if (typeof opts.from != 'undefined') start += opts.from.toString(10);
+  if (typeof opts.from != 'undefined') start += index.from
+    ? index.from(opts.from)
+    : opts.from.toString(10);
 
   var cfg = {
     start : start,
@@ -71,8 +75,6 @@ store.prototype.createReadStream = function (key, opts) {
   var rs = opts.live
     ? livefeed(this.db, cfg)
     : this.db.createReadStream(cfg)
-
-  var index = indexes[this.index](this.db, key);
 
   var addIndex = through(function (chunk) {
     this.queue({

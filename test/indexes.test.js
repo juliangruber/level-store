@@ -70,9 +70,9 @@ test('bytelength', function (t, db) {
       store.createReadStream('file', { index : true })
       .pipe(through(function (chunk) {
         if (i++ == 0) {
-          t.equal(chunk.index, '00000003', '3 bytes');
+          t.equal(chunk.index, 3, '3 bytes');
         } else {
-          t.equal(chunk.index, '00000006', '6 bytes');
+          t.equal(chunk.index, 6, '6 bytes');
           t.end();
         }
       }))
@@ -83,8 +83,7 @@ test('bytelength', function (t, db) {
     ws.end();
   });
 
-  /*t.test('resume', function (t) {
-    t.plan(2);
+  t.test('resume', function (t) {
     var ws = store.createWriteStream('file');
 
     ws.on('close', function () {
@@ -96,13 +95,14 @@ test('bytelength', function (t, db) {
       }))
       .on('end', function () {
         t.equal(data, 'obar');
+        t.end();
       });
     });
 
     ws.write('foo');
     ws.write('bar');
     ws.end();
-  });*/
+  });
 });
 
 test('chunks', function (t, db) {

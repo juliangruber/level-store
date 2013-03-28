@@ -85,8 +85,55 @@ indexes.bytelength = function (db, key) {
     });
   }
 
+  function filter (opts) {
+    var firstChunk = true;
+
+    var tr = through(function (chunk) {
+      var hasFrom = typeof opts.from != 'undefined'
+
+      chunk = {
+        index : unpadHex(chunk.index.substr(key.length + 1)),
+        data : chunk.data
+      }
+
+      if (!firstChunk || !hasFrom || chunk.index == opts.from + 1) {
+        return this.queue(chunk);
+      }
+
+      firstChunk = false;
+      // first chunk that has been read and it doesn't start at the perfect
+      // position. fetch the chunk before that and prepend necessary data
+      this.pause();
+
+      peek.last(db, {
+        reverse : true,
+        start : key + ' ',
+        end : key + ' ' + padHex(chunk.index - 1)
+      }, function (err, lastKey) {
+        if (err) {
+          chunk.data = chunk.data.substr(chunk.index - opts.from, chunk.data.length);
+          tr.queue(chunk);
+          return tr.resume();
+        };
+        db.get(lastKey, function (err, value) {
+          chunk.data = value.substr(opts.from - chunk.index) + chunk.data;
+          tr.queue(chunk);
+          tr.resume();
+        });
+      })
+    });
+
+    return tr;
+  }
+
+  function from (val) {
+    return padHex(val);
+  }
+
   return {
     addKey     : addKey,
     initialize : initialize,
+    filter     : filter,
+    from       : from
   };
 }
