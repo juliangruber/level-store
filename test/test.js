@@ -40,7 +40,7 @@ test('key collisions', function (t, db) {
     });
 });
 
-test('timestamps', function (t, db) {
+test('indexes', function (t, db) {
   fs.createReadStream(__dirname + '/fixtures/file.txt')
     .pipe(store(db).createWriteStream('file'))
     .on('close', function () {
