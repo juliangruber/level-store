@@ -7,6 +7,8 @@ var levelUp = require('levelup');
 
 module.exports = store;
 
+function noop () {}
+
 function store (db) {
   if (!(this instanceof store)) return new store(db);
   this.db = typeof db == 'string'
@@ -14,7 +16,15 @@ function store (db) {
     : db;
 }
 
+store.prototype.delete = function (key, cb) {
+  deleteRange(this.db, {
+    start : key + ' ',
+    end : key + '~'
+  }, cb || noop);
+}
+
 store.prototype.createWriteStream = function (key, opts) {
+  var self = this;
   if (!opts) opts = {};
 
   var tr = through(function (chunk) {
@@ -24,16 +34,13 @@ store.prototype.createWriteStream = function (key, opts) {
     });
   });
 
-  var ws = this.db.createWriteStream();
+  var ws = self.db.createWriteStream();
 
   var dpl = duplexer(tr, tr.pipe(ws));
 
   if (!opts.append) {
     tr.pause();
-    deleteRange(this.db, {
-      start : key + ' ',
-      end : key + '~'
-    }, function (err) {
+    self.delete(key, function (err) {
       if (err) dpl.emit('error', err);
       tr.resume();
     });

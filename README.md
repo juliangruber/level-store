@@ -72,6 +72,10 @@ Possible `options` are:
 * `append (Boolean)`: If `true`, possibly already existing data stored under `key` will be appended
 rather than replaced.
 
+### store#delete(key[, cb])
+
+Delete everything stored under `key`.
+
 ## Installation
 
 With [npm](http://npmjs.org) do
