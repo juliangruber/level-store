@@ -82,6 +82,27 @@ test('bytelength', function (t, db) {
     ws.write('bar');
     ws.end();
   });
+
+  t.test('resume', function (t) {
+    t.plan(2);
+    var ws = store.createWriteStream('file');
+
+    ws.on('close', function () {
+      var data = '';
+
+      store.createReadStream('file', { from : 1 })
+      .pipe(through(function (chunk) {
+        data += chunk.data;
+      }))
+      .on('end', function () {
+        t.equal(data, 'obar');
+      });
+    });
+
+    ws.write('foo');
+    ws.write('bar');
+    ws.end();
+  });
 });
 
 function test (name, cb) {
