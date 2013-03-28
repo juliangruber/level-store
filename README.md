@@ -49,7 +49,7 @@ store.createReadStream('file', { from : 1363783762087 }).on('data', console.log)
 You can choose from several indexing mechanisms depending on your needs.
 From fastest to slowest:
 
-* **timestamp**: The index is the timestamp of when the chunk was written.
+* **timestamp**: The default index. Uses timestamps of when a chunk was written.
 **Fast** and already enough for resuming. Activate with
 `Store(db, { index : 'timestamp' })`.
 * **bytelength**: The index is the bytelength of what has already been written
