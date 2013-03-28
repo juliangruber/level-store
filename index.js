@@ -12,11 +12,12 @@ module.exports = store;
 
 function noop () {}
 
-function store (db) {
-  if (!(this instanceof store)) return new store(db);
+function store (db, opts) {
+  if (!(this instanceof store)) return new store(db, opts);
   this.db = typeof db == 'string'
     ? levelUp(db)
     : db;
+  this.opts = opts || {};
 }
 
 store.prototype.delete = function (key, cb) {
@@ -34,13 +35,23 @@ store.prototype.createWriteStream = function (key, opts) {
 
   var input = through().pause();
 
-  var addKey = through(function (chunk) {
-    length += chunk.length;
-    this.queue({
-      key : key + ' ' + padHex(length),
-      value : chunk
+  var addKey
+  if (self.opts.timestamps) {
+    addKey = through(function (chunk) {
+      this.queue({
+        key : key + ' ' + timestamp(),
+        value : chunk
+      });
+    })
+  } else {
+    addKey = through(function (chunk) {
+      length += chunk.length;
+      this.queue({
+        key : key + ' ' + padHex(length),
+        value : chunk
+      });
     });
-  });
+  }
 
   var ws = self.db.createWriteStream();
   var dpl = duplexer(input, ws);
@@ -48,14 +59,18 @@ store.prototype.createWriteStream = function (key, opts) {
   input.pipe(addKey).pipe(ws);
 
   if (opts.append) {
-    peek.last(self.db, {
-      reverse : true,
-      start : key + ' ',
-      end : key + '~'
-    }, function (err, lastKey) {
-      if (!err) length = unpadHex(lastKey.substr(key.length + 1));
+    if (self.opts.timetamps) {
       input.resume();
-    });
+    } else {
+      peek.last(self.db, {
+        reverse : true,
+        start : key + ' ',
+        end : key + '~'
+      }, function (err, lastKey) {
+        if (!err) length = unpadHex(lastKey.substr(key.length + 1));
+        input.resume();
+      });
+    }
   } else {
     self.delete(key, function (err) {
       if (err) dpl.emit('error', err);
