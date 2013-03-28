@@ -1,9 +1,9 @@
 var through = require('through');
 var duplexer = require('duplexer');
 var timestamp = require('monotonic-timestamp');
+var levelUp = require('levelup');
 var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
-var levelUp = require('levelup');
 var peek = require('level-peek');
 var padHex = require('./util').padHex;
 var unpadHex = require('./util').unpadHex;
@@ -14,10 +14,14 @@ function noop () {}
 
 function store (db, opts) {
   if (!(this instanceof store)) return new store(db, opts);
+
   this.db = typeof db == 'string'
     ? levelUp(db)
     : db;
-  this.opts = opts || {};
+
+  if (!opts) opts = {};
+
+  this.index = opts.index || 'timestamp';
 }
 
 store.prototype.delete = function (key, cb) {
@@ -35,17 +39,17 @@ store.prototype.createWriteStream = function (key, opts) {
 
   var input = through();
 
-  var addKey = through(self.opts.timestamps
+  var addKey = through(self.index == 'length'
     ? function (chunk) {
+        length += chunk.length;
         this.queue({
-          key : key + ' ' + timestamp(),
+          key : key + ' ' + padHex(length),
           value : chunk
         });
       }
     : function (chunk) {
-        length += chunk.length;
         this.queue({
-          key : key + ' ' + padHex(length),
+          key : key + ' ' + timestamp(),
           value : chunk
         });
       }
@@ -56,7 +60,7 @@ store.prototype.createWriteStream = function (key, opts) {
 
   input.pipe(addKey).pipe(ws);
 
-  if (opts.append && !self.opts.timestamps) {
+  if (opts.append && self.index == 'length') {
     input.pause();
     peek.last(self.db, {
       reverse : true,
@@ -66,7 +70,7 @@ store.prototype.createWriteStream = function (key, opts) {
       if (!err) length = unpadHex(lastKey.substr(key.length + 1));
       input.resume();
     });
-  } else {
+  } else if (!opts.append) {
     input.pause();
     self.delete(key, function (err) {
       if (err) dpl.emit('error', err);
