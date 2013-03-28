@@ -35,23 +35,21 @@ store.prototype.createWriteStream = function (key, opts) {
 
   var input = through();
 
-  var addKey
-  if (self.opts.timestamps) {
-    addKey = through(function (chunk) {
-      this.queue({
-        key : key + ' ' + timestamp(),
-        value : chunk
-      });
-    })
-  } else {
-    addKey = through(function (chunk) {
-      length += chunk.length;
-      this.queue({
-        key : key + ' ' + padHex(length),
-        value : chunk
-      });
-    });
-  }
+  var addKey = through(self.opts.timestamps
+    ? function (chunk) {
+        this.queue({
+          key : key + ' ' + timestamp(),
+          value : chunk
+        });
+      }
+    : function (chunk) {
+        length += chunk.length;
+        this.queue({
+          key : key + ' ' + padHex(length),
+          value : chunk
+        });
+      }
+  )
 
   var ws = self.db.createWriteStream();
   var dpl = duplexer(input, ws);
