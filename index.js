@@ -72,14 +72,21 @@ store.prototype.createReadStream = function (key, opts) {
     ? livefeed(this.db, cfg)
     : this.db.createReadStream(cfg)
 
-  return rs.pipe(through(function (chunk) {
-    chunk = {
+  var index = indexes[this.index](this.db, key);
+
+  var addIndex = through(function (chunk) {
+    this.queue({
       index : chunk.key.slice(key.length + 1),
       data : chunk.value
-    };
-    if (opts.from && chunk.index == opts.from) return;
-    if (!opts.index && !opts.from) chunk = chunk.data;
+    });
+  });
 
-    this.queue(chunk);
-  }));
+  var removeIndex = through(function (chunk) {
+    this.queue(chunk.data);
+  });
+
+  var res = rs.pipe(addIndex);
+  if (index.filter) res = res.pipe(index.filter);
+  if (!opts.index && !opts.from) res = res.pipe(removeIndex);
+  return res;
 }
