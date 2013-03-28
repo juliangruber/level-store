@@ -39,7 +39,7 @@ store.prototype.createWriteStream = function (key, opts) {
 
   var input = through();
 
-  var addKey = through(self.index == 'length'
+  var addKey = through(self.index == 'bytelength'
     ? function (chunk) {
         length += chunk.length;
         this.queue({
@@ -60,7 +60,7 @@ store.prototype.createWriteStream = function (key, opts) {
 
   input.pipe(addKey).pipe(ws);
 
-  if (opts.append && self.index == 'length') {
+  if (opts.append && self.index == 'bytelength') {
     // find length first
     input.pause();
     peek.last(self.db, {
