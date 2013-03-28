@@ -61,7 +61,7 @@ test('resume', function (t, db) {
     .on('close', function () {
       store(db).createReadStream('file', { ts : true })
       .once('data', function (chunk) {
-        store(db).createReadStream('file', { since : chunk.ts })
+        store(db).createReadStream('file', { from : chunk.ts })
         .on('data', function (chunk) {
           t.ok(chunk);
         });

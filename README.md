@@ -36,10 +36,10 @@ store.createReadStream('file', { ts : true }).on('data', console.log);
 ```
 
 Now you only need store the timestamp of the last read chunk in a variable and you can
-resume reading after an error, passing `{ since : ts }`:
+resume reading after an error, passing `{ from : ts }`:
 
 ```js
-store.createReadStream('file', { since : 1363783762087 }).on('data', console.log);
+store.createReadStream('file', { from : 1363783762087 }).on('data', console.log);
 // => { ts : 1363783876109, data : <Buffer bb bb> }
 ```
 
@@ -58,7 +58,7 @@ A readable stream that replays the stream stored at `key`.
 Possible `options` are:
 
 * `ts (Boolean)`: If `true`, don't emit raw chunks but rather objects having `ts` and `data` fields.
-* `since (Number)`: When reading, only read data that has been stored after that date.
+* `from (Number)`: When reading, only read data that has been stored after position `from`.
 Automatically sets `ts` to `true`.
 * `live (Boolen)`: If `true`, the stream will stay open, emitting new data as it comes in.
 

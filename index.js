@@ -70,7 +70,7 @@ store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
   var start = key + ' ';
-  if (opts.since) start += opts.since;
+  if (opts.from) start += opts.from;
 
   var cfg = {
     start : start,
@@ -86,8 +86,8 @@ store.prototype.createReadStream = function (key, opts) {
       ts : chunk.key.slice(key.length + 1),
       data : chunk.value
     };
-    if (opts.since && chunk.ts == opts.since) return;
-    if (!opts.ts && !opts.since) chunk = chunk.data;
+    if (opts.from && chunk.ts == opts.from) return;
+    if (!opts.ts && !opts.from) chunk = chunk.data;
 
     this.queue(chunk);
   }));
