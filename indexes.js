@@ -96,7 +96,13 @@ indexes.bytelength = function (db, key) {
         data : chunk.data
       }
 
+      if (chunk.index == opts.from + 1) {
+        firstChunk = false;
+        return;
+      };
+
       if (!firstChunk || !hasFrom || chunk.index == opts.from + 1) {
+        firstChunk = false;
         return this.queue(chunk);
       }
 
