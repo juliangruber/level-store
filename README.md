@@ -26,30 +26,46 @@ fs.createReadStream(__dirname + '/file.txt')
 
 ## Resuming
 
-When reading fails you might not want to start over again completely but rather resume
-after the last chunk you received. First, pass `index : true` as an option so you don't only
-get the stored chunks but also their index in the store:
+When reading fails you might not want to start over again completely but rather
+resume after the last chunk you received. First, pass `index : true` as an
+option so you don't only get the stored chunks but also their index in the
+store:
 
 ```js
 store.createReadStream('file', { index : true }).on('data', console.log);
 // => { index : 1363783762087, data : <Buffer aa aa> }
 ```
 
-Now you only need store the timestamp of the last read chunk in a variable and you can
-resume reading after an error, passing `{ from : index }`:
+Now you only need store the timestamp of the last read chunk in a variable and
+you can resume reading after an error, passing `{ from : index }`:
 
 ```js
 store.createReadStream('file', { from : 1363783762087 }).on('data', console.log);
 // => { index : 1363783876109, data : <Buffer bb bb> }
 ```
 
+## Indexes
+
+You can choose from two indexing mechanisms depending on your needs:
+
+* **timestamp**: The index is the timestamp of when the chunk was written.
+**Fast** and already enough for resuming. Activate with
+`Store(db, { index : 'timestamp' })`.
+* **length**: The index is the bytelength of what has already been written
+under the given `key`. **Slower** but more flexible. Activate with
+`Store(db, { index : 'length' })`.
+
 ## API
 
-### Store(db)
+### Store(db[, opts])
 
 Returns a `level-store` instance.
 
-`db` can either be **a path** under which the data should be stored or **an instance of LevelUp**.
+`db` can either be **a path** under which the data should be stored or
+**an instance of LevelUp**.
+
+If `opts.index` is set, that indexing mechanism is used intead of the the
+default `timestamp`.
 
 ### store#createReadStream(key[, opts])
 
