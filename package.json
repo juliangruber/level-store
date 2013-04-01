@@ -9,7 +9,7 @@
   "homepage": "https://github.com/juliangruber/level-store",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/*.js"
+    "test": "node test/test.js"
   },
   "dependencies": {
     "through": "~2.2.7",
