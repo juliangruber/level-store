@@ -91,11 +91,13 @@ function capped (db, key, opts) {
     if (++written <= opts.capped) return cb(null, chunk);
 
     function deleteFirst () {
+      // there is a race condition here where the chunks haven't been
+      // written to the database yet but this already wants to delete
+      // them => retry
+ 
       peek.first(db, { start : key + ' ' }, function (err, _key) {
+        if (_key == key) return deleteFirst();
         db.del(_key, function (err) {
-          // there is a race condition here where the chunks haven't been
-          // written to the database yet but this already wants to delete
-          // them => retry
           if (err) return deleteFirst();
           cb(null, chunk);
         });
