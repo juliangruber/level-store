@@ -66,6 +66,15 @@ store.createReadStream('file', { since : 1363783762087 }).on('data', console.log
 // => { ts : 1363783876109, data : <Buffer bb bb> }
 ```
 
+## Capped streams
+
+If you don't want your stream to grow infinitely and it's ok to cut old parts
+of, use `{ capped : x }` to limit to stream to `x` chunk:
+
+```js
+store.createWriteStream('file', { capped : 3 }).write('...');
+```
+
 ## API
 
 ### Store(db)
@@ -94,6 +103,7 @@ Possible `options` are:
 
 * `append (Boolean)`: If `true`, possibly already existing data stored under `key` will be appended
 rather than replaced.
+* `capped (Number)`: If set, cap the stream to `x` chunks.
 
 ### store#delete(key[, cb])
 

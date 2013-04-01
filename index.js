@@ -37,21 +37,9 @@ store.prototype.createWriteStream = function (key, opts) {
   });
 
   // capped streams
-  var tr;
-
-  if (opts.capped) {
-    var written = 0;
-    tr = ordered(function (chunk, cb) {
-      if (++written <= opts.capped) return cb(null, chunk);
-      peek.first(self.db, { start : key + ' ' }, function (err, key, value) {
-        self.db.del(key, function (err) {
-          cb(err, chunk);
-        });
-      });
-    });
-  } else {
-    tr = through();
-  }
+  var tr = opts.capped
+    ? capped(self.db, key, opts)
+    : through();
 
   var ws = self.db.createWriteStream();
   input.pipe(tr).pipe(ws);
@@ -94,4 +82,42 @@ store.prototype.createReadStream = function (key, opts) {
 
     this.queue(chunk);
   }));
+}
+
+function capped (db, key, opts) {
+  var written = 0;
+
+  tr = ordered(function (chunk, cb) {
+    if (++written <= opts.capped) return cb(null, chunk);
+    peek.first(db, { start : key + ' ' }, function (err, _key) {
+      db.del(_key, function (err) {
+        cb(err, chunk);
+      });
+    });
+  });
+
+  if (opts.append) {
+    tr.pause();
+    var keys = [];
+
+    var ks = db.createKeyStream({
+      start : key + ' ',
+      end   : key + '~'
+    });
+    
+    ks
+    .on('data', function (_key) { keys.push(_key) })
+    .on('end', function () {
+      deleteRange(db, {
+        start : key + ' ',
+        end   : keys.slice(keys.length - opts.capped)
+      }, function (err) {
+        written = opts.capped;
+        if (err) tr.emit('error', err);
+        tr.resume();
+      })
+    })
+  }
+
+  return tr;
 }

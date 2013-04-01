@@ -142,6 +142,29 @@ test('capped', function (t, db) {
   });
 });
 
+test('capped appending', function (t, db) {
+  var ws = store(db).createWriteStream('key');
+  ws.write('foo');
+  ws.end();
+
+  ws.on('close', function () {
+    ws = store(db).createWriteStream('key', { capped : 2, append : true });
+    ws.write('bar');
+    ws.write('baz');
+    ws.end();
+
+    ws.on('close', function () {
+      var data = [];
+      store(db).createReadStream('key')
+      .on('data', function (d) { data.push(d) })
+      .on('end', function () {
+        t.deepEqual(data, ['bar', 'baz']);
+        t.end();
+      });
+    });
+  });
+});
+
 function test (name, cb) {
   if (!cb) return tap.test(name);
   tap.test(name, function (t) {
