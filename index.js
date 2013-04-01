@@ -4,6 +4,8 @@ var timestamp = require('monotonic-timestamp');
 var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
 var levelUp = require('levelup');
+var ordered = require('ordered-through');
+var peek = require('level-peek');
 
 module.exports = store;
 
@@ -27,22 +29,40 @@ store.prototype.createWriteStream = function (key, opts) {
   var self = this;
   if (!opts) opts = {};
 
-  var tr = through(function (chunk) {
+  var input = through(function (chunk, cb) {
     this.queue({
       key : key + ' ' + timestamp(),
       value : chunk
-    });
+    })
   });
 
+  // capped streams
+  var tr;
+
+  if (opts.capped) {
+    var written = 0;
+    tr = ordered(function (chunk, cb) {
+      if (++written <= opts.capped) return cb(null, chunk);
+      peek.first(self.db, { start : key + ' ' }, function (err, key, value) {
+        self.db.del(key, function (err) {
+          cb(err, chunk);
+        });
+      });
+    });
+  } else {
+    tr = through();
+  }
+
   var ws = self.db.createWriteStream();
+  input.pipe(tr).pipe(ws);
+  var dpl = duplexer(input, ws);
 
-  var dpl = duplexer(tr, tr.pipe(ws));
-
+  // append
   if (!opts.append) {
-    tr.pause();
+    input.pause();
     self.delete(key, function (err) {
       if (err) dpl.emit('error', err);
-      tr.resume();
+      input.resume();
     });
   }
 
