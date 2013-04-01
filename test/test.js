@@ -149,7 +149,7 @@ test('capped appending', function (t, db) {
   ws.end();
 
   ws.on('close', function () {
-    ws = store(db).createWriteStream('key', { capped : 2, append : true });
+    ws = store(db).createWriteStream('key', { capped : 1, append : true });
     ws.write('bar');
     ws.write('baz');
     ws.end();
@@ -159,7 +159,7 @@ test('capped appending', function (t, db) {
       store(db).createReadStream('key')
       .on('data', function (d) { data.push(d) })
       .on('end', function () {
-        t.deepEqual(data, ['bar', 'baz'], 'deleted first');
+        t.deepEqual(data, ['baz'], 'deleted first');
         t.end();
       });
     });
