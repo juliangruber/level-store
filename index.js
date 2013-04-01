@@ -89,11 +89,20 @@ function capped (db, key, opts) {
 
   tr = ordered(function (chunk, cb) {
     if (++written <= opts.capped) return cb(null, chunk);
-    peek.first(db, { start : key + ' ' }, function (err, _key) {
-      db.del(_key, function (err) {
-        cb(err, chunk);
+
+    function deleteFirst () {
+      peek.first(db, { start : key + ' ' }, function (err, _key) {
+        db.del(_key, function (err) {
+          // there is a race condition here where the chunks haven't been
+          // written to the database yet but this already wants to delete
+          // them => retry
+          if (err) return deleteFirst();
+          cb(null, chunk);
+        });
       });
-    });
+    }
+
+    deleteFirst();
   });
 
   if (opts.append) {
