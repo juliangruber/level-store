@@ -46,8 +46,8 @@ test('timestamps', function (t, db) {
     .on('close', function () {
       store(db).createReadStream('file', { ts : true })
       .pipe(through(function (chunk) {
-        t.ok(chunk.ts);
-        t.ok(chunk.data);
+        t.ok(chunk.ts, 'chunk timestamp');
+        t.ok(chunk.data, 'chunk data');
       }))
       .on('end', t.end.bind(t));
     });
@@ -63,7 +63,7 @@ test('resume', function (t, db) {
       .once('data', function (chunk) {
         store(db).createReadStream('file', { since : chunk.ts })
         .on('data', function (chunk) {
-          t.ok(chunk);
+          t.ok(chunk, 'received data');
         });
       });
     });
@@ -77,6 +77,7 @@ test('live', function (t, db) {
   var data = '';
   live.pipe(through(function (chunk) {
     data += chunk;
+    t.ok(true, 'chunk');
     if (data == fixture) t.end();
   }));
 
@@ -95,7 +96,7 @@ test('append', function (t, db) {
       store(db).createReadStream('key')
       .on('data', function (d) { data += d })
       .on('end', function () {
-        t.equal(data, 'foobar');
+        t.equal(data, 'foobar', 'appended values');
         t.end();
       })
     });
@@ -115,7 +116,7 @@ test('replace', function (t, db) {
       store(db).createReadStream('key')
       .on('data', function (d) { data += d })
       .on('end', function () {
-        t.equal(data, 'bar');
+        t.equal(data, 'bar', 'deleted');
         t.end();
       })
     });
@@ -136,7 +137,7 @@ test('capped', function (t, db) {
     store(db).createReadStream('key')
     .on('data', function (d) { data.push(d) })
     .on('end', function () {
-      t.deepEqual(data, ['bar', 'baz']);
+      t.deepEqual(data, ['bar', 'baz'], 'deleted first');
       t.end();
     });
   });
@@ -158,7 +159,7 @@ test('capped appending', function (t, db) {
       store(db).createReadStream('key')
       .on('data', function (d) { data.push(d) })
       .on('end', function () {
-        t.deepEqual(data, ['bar', 'baz']);
+        t.deepEqual(data, ['bar', 'baz'], 'deleted first');
         t.end();
       });
     });
