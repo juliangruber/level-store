@@ -1,7 +1,7 @@
 {
   "name": "level-store",
   "description": "A streaming storage engine based on LevelDB.",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "repository": {
     "type": "git",
     "url": "git://github.com/juliangruber/level-store.git"
@@ -18,7 +18,7 @@
     "level-livefeed": "~0.1.3",
     "level-delete-range": "~0.1.0",
     "levelUp": "git://github.com/juliangruber/node-levelup#783958daaed48bf8367af1c4977b5e75ae06b9dd",
-    "ordered-through": "0.0.0",
+    "ordered-through": "~0.0.1",
     "level-peek": "~1.0.6"
   },
   "devDependencies": {
