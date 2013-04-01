@@ -83,7 +83,31 @@ test('bytelength', function (t, db) {
     ws.end();
   });
 
-  t.test('resume', function (t) {
+  '000000'.split('').forEach(function (_, i) {
+    t.test('resume ' + i, function (t) {
+      console.log('RESUME')
+      var ws = store.createWriteStream('file');
+
+      ws.on('close', function () {
+        var data = '';
+
+        store.createReadStream('file', { from : i })
+        .pipe(through(function (chunk) {
+          data += chunk.data;
+        }))
+        .on('end', function () {
+          t.equal(data, 'foobar'.substr(i - 5));
+          t.end();
+        });
+      });
+
+      ws.write('foo');
+      ws.write('bar');
+      ws.end();
+    });
+  })
+
+  /*t.test('resume', function (t) {
     var ws = store.createWriteStream('file');
 
     ws.on('close', function () {
@@ -123,7 +147,7 @@ test('bytelength', function (t, db) {
     ws.write('foo');
     ws.write('bar');
     ws.end();
-  });
+  });*/
 });
 
 test('chunks', function (t, db) {

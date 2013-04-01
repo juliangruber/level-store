@@ -96,18 +96,20 @@ indexes.bytelength = function (db, key) {
         data : chunk.data
       }
 
-      if (chunk.index == opts.from + 1) {
-        firstChunk = false;
-        return;
-      };
+      console.log('CHUNK', chunk)
 
-      if (!firstChunk || !hasFrom || chunk.index == opts.from + 1) {
-        firstChunk = false;
+      if (!hasFrom || !firstChunk && chunk.index > opts.from) {
+        console.log('ABORT 1');
         return this.queue(chunk);
       }
 
+      if (chunk.index == opts.from + 1 || firstChunk && chunk.index <= opts.from) {
+        console.log('ABORT 2');
+        return;
+      };
+
       firstChunk = false;
-      // first chunk that has been read and it doesn't start at the perfect
+      // first chunk that has been read and it doesn't start at the wanted
       // position. fetch the chunk before that and prepend necessary data
       this.pause();
 
@@ -117,10 +119,14 @@ indexes.bytelength = function (db, key) {
         end : key + ' ' + padHex(chunk.index - 1)
       }, function (err, lastKey) {
         if (err) {
-          chunk.data = chunk.data.substr(chunk.index - opts.from, chunk.data.length);
+          console.log('NO KEY FOUND')
+          chunk.data = opts.from >= chunk.index
+            ? chunk.data.substr(0, chunk.index - opts.from + 1)
+            : chunk.data.substr(opts.from + 1 - chunk.index);
           tr.queue(chunk);
           return tr.resume();
         };
+        console.log('KEY FOUND');
         db.get(lastKey, function (err, value) {
           chunk.data = value.substr(opts.from - chunk.index) + chunk.data;
           tr.queue(chunk);
