@@ -159,7 +159,7 @@ test('capped appending', function (t, db) {
       store(db).createReadStream('key')
       .on('data', function (d) { data.push(d) })
       .on('end', function () {
-        t.deepEqual(data, ['baz'], 'deleted first');
+        t.deepEqual(data, ['baz'], 'capped to 1');
         t.end();
       });
     });
