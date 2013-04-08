@@ -69,7 +69,7 @@ store.createReadStream('file', { since : 1363783762087 }).on('data', console.log
 ## Capped streams
 
 If you don't want your stream to grow infinitely and it's ok to cut old parts
-off, use `{ capped : x }` to limit to stream to `x` chunk:
+off, use `{ capped : x }` to limit to stream to `x` chunks:
 
 ```js
 store.createWriteStream('file', { capped : 3 }).write('...');
