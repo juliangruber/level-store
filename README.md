@@ -109,6 +109,10 @@ rather than replaced.
 
 Delete everything stored under `key`.
 
+### store#exists(key, cb)
+
+Check if `key` exists and call `cb` with `(err, exists)`.
+
 ## Installation
 
 With [npm](http://npmjs.org) do

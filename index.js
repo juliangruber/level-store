@@ -22,7 +22,25 @@ store.prototype.delete = function (key, cb) {
     start : key + ' ',
     end : key + '~'
   }, cb || noop);
-}
+};
+
+store.prototype.exists = function (key, cb) {
+  var exists = false;
+  var opts = {
+    start : key + ' ',
+    end : key + '~',
+    limit : 1
+  };
+
+  this.db.createKeyStream(opts)
+  .on('data', function () {
+    cb(null, exists = true);
+  })
+  .on('end', function () {
+    if (!exists) cb(null, false);
+  })
+  .on('error', cb);
+};
 
 store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};

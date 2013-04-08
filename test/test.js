@@ -166,6 +166,25 @@ test('capped appending', function (t, db) {
   });
 });
 
+test('exists', function (t, db) {
+  store(db).exists('foo', function (err, exists) {
+    t.error(err, 'no error');
+    t.equal(exists, false, 'initially false');
+
+    var ws = store(db).createWriteStream('foo');
+    ws.on('close', function () {
+      store(db).exists('foo', function (err, exists) {
+        t.error(err, 'no error');
+        t.equal(exists, true, 'now exists');
+        t.end();
+      });
+    });
+    ws.write('bar');
+    ws.write('baz');
+    ws.end();
+  });
+});
+
 function test (name, cb) {
   if (!cb) return tap.test(name);
   tap.test(name, function (t) {
