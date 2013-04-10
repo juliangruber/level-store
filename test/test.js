@@ -185,6 +185,28 @@ test('exists', function (t, db) {
   });
 });
 
+test('append(key, value, cb)', function (t, db) {
+  store(db).append('foo', 'bar', function (err) {
+    t.error(err, 'no error');
+    
+    store(db).createReadStream('foo').on('data', function (d) {
+      t.equal(d, 'bar', 'created');
+
+      store(db).append('foo', 'baz', function (err) {
+        t.error(err);
+
+        var data = '';
+        store(db).createReadStream('foo')
+        .on('data', function (d) { data += d })
+        .on('end', function () {
+          t.equal(data, 'barbaz', 'appended');
+          t.end();
+        });
+      });
+    });
+  });
+});
+
 function test (name, cb) {
   if (!cb) return tap.test(name);
   tap.test(name, function (t) {

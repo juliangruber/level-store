@@ -98,3 +98,12 @@ store.prototype.createReadStream = function (key, opts) {
     this.queue(chunk);
   }));
 }
+
+store.prototype.append = function (key, value, cb) {
+  if (!cb) cb = function () {};
+  var ws = this.createWriteStream(key, { append : true });
+  ws.on('close', cb);
+  ws.on('error', cb);
+  ws.write(value);
+  ws.end();
+}

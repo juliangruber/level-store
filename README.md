@@ -113,6 +113,10 @@ Delete everything stored under `key`.
 
 Check if `key` exists and call `cb` with `(err, exists)`.
 
+### store#append(key, value[, cb])
+
+Sugar for appending just one `value` to `key`.
+
 ## Installation
 
 With [npm](http://npmjs.org) do
