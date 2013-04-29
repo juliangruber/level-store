@@ -25,21 +25,9 @@ store.prototype.delete = function (key, cb) {
 };
 
 store.prototype.exists = function (key, cb) {
-  var exists = false;
-  var opts = {
-    start : key + ' ',
-    end : key + '~',
-    limit : 1
-  };
-
-  this.db.createKeyStream(opts)
-  .on('data', function () {
-    cb(null, exists = true);
+  this.db.get(key, function (err) {
+    return cb( null, !!err )
   })
-  .on('end', function () {
-    if (!exists) cb(null, false);
-  })
-  .on('error', cb);
 };
 
 store.prototype.createWriteStream = function (key, opts) {
