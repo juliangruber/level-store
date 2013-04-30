@@ -32,14 +32,19 @@ store.prototype.exists = function (key, cb) {
     limit : 1
   };
 
-  this.db.createKeyStream(opts)
-  .on('data', function () {
-    cb(null, exists = true);
-  })
-  .on('end', function () {
+  var keys = this.db.createKeyStream(opts);
+
+  keys.on('data', function () {
+    exists = true;
+    keys.destroy();
+    cb(null, exists);
+  });
+
+  keys.on('end', function () {
     if (!exists) cb(null, false);
-  })
-  .on('error', cb);
+  });
+
+  keys.on('error', cb);
 };
 
 store.prototype.createWriteStream = function (key, opts) {
