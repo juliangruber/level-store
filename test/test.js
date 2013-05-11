@@ -155,13 +155,15 @@ test('capped appending', function (t, db) {
     ws.end();
 
     ws.on('close', function () {
-      var data = [];
-      store(db).createReadStream('key')
-      .on('data', function (d) { data.push(d) })
-      .on('end', function () {
-        t.deepEqual(data, ['baz'], 'capped to 1');
-        t.end();
-      });
+      setTimeout(function () {
+        var data = [];
+        store(db).createReadStream('key')
+        .on('data', function (d) { data.push(d) })
+        .on('end', function () {
+          t.deepEqual(data, ['baz'], 'capped to 1');
+          t.end();
+        });
+      }, 500);
     });
   });
 });
