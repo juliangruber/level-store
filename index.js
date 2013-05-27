@@ -3,7 +3,6 @@ var duplexer = require('duplexer');
 var timestamp = require('monotonic-timestamp');
 var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
-var levelUp = require('levelup');
 var cap = require('level-capped');
 
 module.exports = store;
@@ -12,9 +11,7 @@ function noop () {}
 
 function store (db) {
   if (!(this instanceof store)) return new store(db);
-  this.db = typeof db == 'string'
-    ? levelUp(db)
-    : db;
+  this.db = db;
 }
 
 store.prototype.delete = function (key, cb) {

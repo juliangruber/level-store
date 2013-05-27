@@ -1,5 +1,5 @@
 var store = require('..');
-var levelup = require('levelup');
+var levelup = require('level');
 var os = require('os');
 var fs = require('fs');
 var rimraf = require('rimraf');
@@ -56,17 +56,20 @@ test('timestamps', function (t, db) {
 test('resume', function (t, db) {
   t.plan(1);
 
-  fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(store(db).createWriteStream('file'))
-    .on('close', function () {
-      store(db).createReadStream('file', { ts : true })
-      .once('data', function (chunk) {
-        store(db).createReadStream('file', { since : chunk.ts })
-        .on('data', function (chunk) {
-          t.ok(chunk, 'received data');
-        });
+  var ws = store(db).createWriteStream('file');
+  ws.write('foo');
+  ws.write('bar');
+  ws.end();
+
+  ws.on('close', function () {
+    store(db).createReadStream('file', { ts : true })
+    .once('data', function (chunk) {
+      store(db).createReadStream('file', { since : chunk.ts })
+      .on('data', function (chunk) {
+        t.ok(chunk, 'received data');
       });
     });
+  });
 });
 
 test('live', function (t, db) {

@@ -22,10 +22,11 @@ Only need in-memory persistence and no resuming? Check out [enstore](https://git
 Store a file in LevelDB under the key `file` and read it out again:
 
 ```js
+var levelup = require('level');
 var Store = require('level-store');
 var fs = require('fs');
 
-var store = Store('/tmp/level-store');
+var store = Store(levelup('/tmp/level-store'));
 
 fs.createReadStream(__dirname + '/file.txt')
   .pipe(store.createWriteStream('file'))
