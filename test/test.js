@@ -40,13 +40,13 @@ test('key collisions', function (t, db) {
     });
 });
 
-test('timestamps', function (t, db) {
+test('indexes', function (t, db) {
   fs.createReadStream(__dirname + '/fixtures/file.txt')
     .pipe(store(db).createWriteStream('file'))
     .on('close', function () {
       store(db).createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
-        t.ok(chunk.index, 'chunk timestamp');
+        t.ok(chunk.index, 'chunk index');
         t.ok(chunk.data, 'chunk data');
       }))
       .on('end', t.end.bind(t));

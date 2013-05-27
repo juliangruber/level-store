@@ -1,27 +1,28 @@
 var through = require('through');
 var duplexer = require('duplexer');
-var timestamp = require('monotonic-timestamp');
 var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
 var cap = require('level-capped');
+var indexes = require('./lib/indexes');
 
-module.exports = store;
+module.exports = Store;
 
 function noop () {}
 
-function store (db) {
-  if (!(this instanceof store)) return new store(db);
+function Store (db, opts) {
+  if (!(this instanceof Store)) return new Store(db, opts);
   this.db = db;
+  this.index = (opts || {}).index || 'timestamp';
 }
 
-store.prototype.delete = function (key, cb) {
+Store.prototype.delete = function (key, cb) {
   deleteRange(this.db, {
     start : key + ' ',
     end : key + '~'
   }, cb || noop);
 };
 
-store.prototype.exists = function (key, cb) {
+Store.prototype.exists = function (key, cb) {
   var exists = false;
   var opts = {
     start : key + ' ',
@@ -44,41 +45,50 @@ store.prototype.exists = function (key, cb) {
   keys.on('error', cb);
 };
 
-store.prototype.createWriteStream = function (key, opts) {
+Store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
-  var input = through(function (chunk, cb) {
-    this.queue({
-      key : key + ' ' + timestamp(),
-      value : chunk
-    });
-  });
+  var index = indexes[opts.index || this.index](this.db, key);
+  var input = through().pause();
 
   var ws = this.db.createWriteStream();
-  var dpl = duplexer(input, input.pipe(ws));
+  var dpl = duplexer(input, ws);
 
   if (typeof opts.capped != 'undefined') {
     var capped = cap(this.db, key, opts.capped);
     ws.on('end', capped.end.bind(capped));
   }
 
-  // append
-  if (!opts.append) {
-    input.pause();
-    this.delete(key, function (err) {
-      if (err) dpl.emit('error', err);
-      input.resume();
-    });
+  input
+    .pipe(index.addKey)
+    .pipe(ws);
+
+  if (opts.append) {
+    index.initialize(ready);
+  } else {
+    this.delete(key, ready);
+  }
+
+  function ready (err) {
+    if (err) dpl.emit('error', err);
+    input.resume();
   }
 
   return dpl;
 }
 
-store.prototype.createReadStream = function (key, opts) {
+Store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
+  var idx = typeof opts.index == 'string'
+    ? opts.index
+    : this.index;
+  var index = indexes[idx](this.db, key);
+
   var start = key + ' ';
-  if (typeof opts.from != 'undefined') start += opts.from;
+  if (typeof opts.from != 'undefined') start += index.from
+    ? index.from(opts.from)
+    : opts.from.toString(10);
 
   var cfg = {
     start : start,
@@ -89,19 +99,33 @@ store.prototype.createReadStream = function (key, opts) {
     ? livefeed(this.db, cfg)
     : this.db.createReadStream(cfg)
 
-  return rs.pipe(through(function (chunk) {
-    chunk = {
+  var addIndex = through(function (chunk) {
+    this.queue({
       index: chunk.key.slice(key.length + 1),
       data: chunk.value
-    };
-    if (opts.from && chunk.index == opts.from) return;
-    if (!opts.index && typeof opts.from == 'undefined') chunk = chunk.data;
+    });
+  });
 
-    this.queue(chunk);
-  }));
+  var filter = index.filter
+    ? index.filter(opts)
+    : through(function (chunk) {
+        if (typeof opts.from == 'undefined' || chunk.index > opts.from) {
+          this.queue(chunk);
+        }
+      });
+
+  var removeIndex = through(function (chunk) {
+    this.queue(chunk.data);
+  });
+
+  var res = rs.pipe(addIndex).pipe(filter);
+
+  return !opts.index && typeof opts.from == 'undefined'
+    ? res.pipe(removeIndex)
+    : res;
 }
 
-store.prototype.append = function (key, value, cb) {
+Store.prototype.append = function (key, value, cb) {
   if (!cb) cb = function () {};
   var ws = this.createWriteStream(key, { append : true });
   ws.on('close', cb);

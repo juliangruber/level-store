@@ -68,6 +68,20 @@ store.createReadStream('file', { from: 1363783762087 }).on('data', console.log);
 // => { index: 1363783876109, data : <Buffer bb bb> }
 ```
 
+## Indexes
+
+You can choose from several indexing mechanisms, which are from fastest to
+slowest:
+
+* **timestamp**: The default index. Uses timestamps of when a chunk was written.
+**Fast** and already enough for resuming. Activate with
+`Store(db, { index : 'timestamp' })`.
+* **chunks**: The index is the number of chunks already written, starting at `0`.
+Activate with `Store(db, { index : 'chunks' })`.
+* **TODO**: **bytelength**: The index is the bytelength of what has already been written
+under the given `key`. **Slow**, but very flexible. Activate with
+`Store(db, { index : 'bytelength' })`.
+
 ## Capped streams
 
 If you don't want your stream to grow infinitely and it's ok to cut old parts
@@ -79,11 +93,14 @@ store.createWriteStream('file', { capped : 3 }).write('...');
 
 ## API
 
-### Store(db)
+### Store(db[, opts])
 
 Returns a `level-store` instance.
 
-`db` can either be **a path** under which the data should be stored or **an instance of LevelUp**.
+`db` is **an instance of LevelUp**.
+
+If `opts.index` is set, that indexing mechanism is used intead of the
+default one (`timestamp`).
 
 ### store#createReadStream(key[, opts])
 
@@ -91,8 +108,8 @@ A readable stream that replays the stream stored at `key`.
 
 Possible `options` are:
 
-* `index (Boolean)`: If `true`, don't emit raw chunks but rather objects having
-`index` and `data` fields.
+* `index (Boolean|String)`: If `true`, don't emit raw chunks but rather objects having
+`index` and `data` fields. If a `String`, override the index passed to `Store()`.
 * `from (Number)`: When reading, only read data that has been stored after
 position `from`. Automatically sets `ts` to `true`.
 * `live (Boolean)`: If `true`, the stream will stay open, emitting new data as it comes in.
@@ -107,6 +124,7 @@ Possible `options` are:
 * `append (Boolean)`: If `true`, possibly already existing data stored under `key` will be appended
 rather than replaced.
 * `capped (Number)`: If set, cap the stream to `x` chunks.
+* `index (String)`: Override the index passed to `Store()`.
 
 ### store#delete(key[, cb])
 
@@ -116,9 +134,11 @@ Delete everything stored under `key`.
 
 Check if `key` exists and call `cb` with `(err, exists)`.
 
-### store#append(key, value[, cb])
+### store#append(key, value[, opts][, cb])
 
 Sugar for appending just one `value` to `key`.
+
+If `opts.index` is set that overrides the index passed to `Store()`.
 
 ## Installation
 
