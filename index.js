@@ -78,7 +78,7 @@ store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
   var start = key + ' ';
-  if (opts.since) start += opts.since;
+  if (typeof opts.from != 'undefined') start += opts.from;
 
   var cfg = {
     start : start,
@@ -91,11 +91,11 @@ store.prototype.createReadStream = function (key, opts) {
 
   return rs.pipe(through(function (chunk) {
     chunk = {
-      ts : chunk.key.slice(key.length + 1),
-      data : chunk.value
+      index: chunk.key.slice(key.length + 1),
+      data: chunk.value
     };
-    if (opts.since && chunk.ts == opts.since) return;
-    if (!opts.ts && !opts.since) chunk = chunk.data;
+    if (opts.from && chunk.index == opts.from) return;
+    if (!opts.index && typeof opts.from == 'undefined') chunk = chunk.data;
 
     this.queue(chunk);
   }));

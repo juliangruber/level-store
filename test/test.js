@@ -44,9 +44,9 @@ test('timestamps', function (t, db) {
   fs.createReadStream(__dirname + '/fixtures/file.txt')
     .pipe(store(db).createWriteStream('file'))
     .on('close', function () {
-      store(db).createReadStream('file', { ts : true })
+      store(db).createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
-        t.ok(chunk.ts, 'chunk timestamp');
+        t.ok(chunk.index, 'chunk timestamp');
         t.ok(chunk.data, 'chunk data');
       }))
       .on('end', t.end.bind(t));
@@ -62,9 +62,9 @@ test('resume', function (t, db) {
   ws.end();
 
   ws.on('close', function () {
-    store(db).createReadStream('file', { ts : true })
+    store(db).createReadStream('file', { index: true })
     .once('data', function (chunk) {
-      store(db).createReadStream('file', { since : chunk.ts })
+      store(db).createReadStream('file', { from: chunk.index })
       .on('data', function (chunk) {
         t.ok(chunk, 'received data');
       });
