@@ -121,9 +121,9 @@ Store.prototype.createReadStream = function (key, opts) {
 
   var res = rs.pipe(addIndex).pipe(filter);
 
-  return !opts.index && typeof opts.from == 'undefined'
-    ? res.pipe(removeIndex)
-    : res;
+  return opts.index
+    ? res
+    : res.pipe(removeIndex);
 }
 
 Store.prototype.append = function (key, value, cb) {

@@ -64,7 +64,9 @@ Now you only need store the timestamp of the last read chunk in a variable and y
 resume reading after an error, passing `{ from: index }`:
 
 ```js
-store.createReadStream('file', { from: 1363783762087 }).on('data', console.log);
+store
+  .createReadStream('file', { from: 1363783762087, index: true })
+  .on('data', console.log);
 // => { index: 1363783876109, data : <Buffer bb bb> }
 ```
 
@@ -111,7 +113,7 @@ Possible `options` are:
 * `index (Boolean|String)`: If `true`, don't emit raw chunks but rather objects having
 `index` and `data` fields. If a `String`, override the index passed to `Store()`.
 * `from (Number|String)`: When reading, only read data that has been stored after
-position `from`. Automatically sets `index` to `true`.
+position `from`.
 * `to (Number|String)`: Skip everything that has an index that sorts after `to`.
 * `live (Boolean)`: If `true`, the stream will stay open, emitting new data as it comes in.
 

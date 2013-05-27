@@ -39,12 +39,12 @@ test('timestamp', function (t, db) {
     ws.on('close', function () {
       var index;
       
-      store.createReadStream('file', { index : true })
+      store.createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
         if (!index) index = chunk.index;
       }))
       .on('end', function () {
-        store.createReadStream('file', { from : index })
+        store.createReadStream('file', { from: index, index: true })
         .pipe(through(function (chunk) {
           t.notEqual(chunk.index, index, 'skips given index');
           t.equal(chunk.data, 'bar');
@@ -89,7 +89,7 @@ test('chunks', function (t, db) {
     ws.on('close', function () {
       var data = '';
 
-      store.createReadStream('file', { from : 0 })
+      store.createReadStream('file', { from: 0, index: true })
       .pipe(through(function (chunk) {
         t.equal(chunk.index, 1, 'second chunk');
         t.end();
