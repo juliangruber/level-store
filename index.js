@@ -91,7 +91,7 @@ Store.prototype.createReadStream = function (key, opts) {
     : opts.from.toString(10);
 
   var end = typeof opts.to != 'undefined'
-    ? key + opts.to
+    ? key + ' ' + opts.to
     : key + '~'
 
   var cfg = { start: start, end: end };
