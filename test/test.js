@@ -56,17 +56,20 @@ test('indexes', function (t, db) {
 test('resume', function (t, db) {
   t.plan(1);
 
-  fs.createReadStream(__dirname + '/fixtures/file.txt')
-    .pipe(store(db).createWriteStream('file'))
-    .on('close', function () {
-      store(db).createReadStream('file', { index : true })
-      .once('data', function (chunk) {
-        store(db).createReadStream('file', { from : chunk.index })
-        .on('data', function (chunk) {
-          t.ok(chunk);
-        });
+  var ws = store(db).createWriteStream('file')
+  ws.write('foo');
+  ws.write('bar');
+  ws.end();
+
+  ws.on('close', function () {
+    store(db).createReadStream('file', { index : true })
+    .once('data', function (chunk) {
+      store(db).createReadStream('file', { from : chunk.index })
+      .on('data', function (chunk) {
+        t.ok(chunk);
       });
     });
+  });
 });
 
 test('live', function (t, db) {

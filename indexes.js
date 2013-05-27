@@ -63,7 +63,7 @@ indexes.chunks = function (db, key) {
   };
 }
 
-indexes.bytelength = function (db, key) {
+/*indexes.bytelength = function (db, key) {
   var length = 0;
 
   var addKey = through(function (chunk) {
@@ -148,4 +148,4 @@ indexes.bytelength = function (db, key) {
     filter     : filter,
     from       : from
   };
-}
+}*/

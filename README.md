@@ -54,7 +54,7 @@ From fastest to slowest:
 `Store(db, { index : 'timestamp' })`.
 * **chunks**: The index is the number of chunks already written, starting at `0`.
 Activate with `Store(db, { index : 'chunks' })`.
-* **bytelength**: The index is the bytelength of what has already been written
+* **TODO**: **bytelength**: The index is the bytelength of what has already been written
 under the given `key`. **Slow**, but very flexible. Activate with
 `Store(db, { index : 'bytelength' })`.
 
