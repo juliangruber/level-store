@@ -90,10 +90,11 @@ Store.prototype.createReadStream = function (key, opts) {
     ? index.from(opts.from)
     : opts.from.toString(10);
 
-  var cfg = {
-    start : start,
-    end : key + '~'
-  };
+  var end = typeof opts.to != 'undefined'
+    ? key + opts.to
+    : key + '~'
+
+  var cfg = { start: start, end: end };
 
   var rs = opts.live
     ? livefeed(this.db, cfg)

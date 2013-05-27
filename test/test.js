@@ -72,6 +72,29 @@ test('resume', function (t, db) {
   });
 });
 
+test('end', function (t, db) {
+  t.plan(3);
+
+  var ws = store(db).createWriteStream('file');
+  ws.write('foo');
+  ws.write('bar');
+  ws.write('baz');
+  ws.end();
+
+  var i = 0;
+
+  ws.on('close', function () {
+    store(db).createReadStream('file', { index: true })
+    .on('data', function (chunk) {
+      if (i++ != 2) return;
+      store(db).createReadStream('file', { to: chunk.index })
+      .on('data', function (chunk) {
+        t.ok(chunk, 'received data');
+      });
+    });
+  });
+});
+
 test('live', function (t, db) {
   var data = '';
 
