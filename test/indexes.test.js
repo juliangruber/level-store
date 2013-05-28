@@ -1,10 +1,23 @@
 var Store = require('..');
-var levelup = require('level');
-var os = require('os');
+var test = require('./util');
 var fs = require('fs');
 var rimraf = require('rimraf');
 var through = require('through');
-var tap = require('tap');
+
+test('indexes', function (t, db) {
+  var store = Store(db);
+
+  fs.createReadStream(__dirname + '/fixtures/file.txt')
+    .pipe(store.createWriteStream('file'))
+    .on('close', function () {
+      store.createReadStream('file', { index: true })
+      .pipe(through(function (chunk) {
+        t.ok(chunk.index, 'chunk index');
+        t.ok(chunk.data, 'chunk data');
+      }))
+      .on('end', t.end.bind(t));
+    });
+});
 
 test('timestamp', function (t, db) {
   var store = Store(db);
@@ -101,17 +114,6 @@ test('chunks', function (t, db) {
     ws.end();
   });
 });
-
-function test (name, cb) {
-  if (!cb) return tap.test(name);
-  tap.test(name, function (t) {
-    var path = os.tmpDir() + '/'
-    path += Math.random().toString(16).slice(2)
-    path += '-level-store-test';
-
-  cb(t, levelup(path));
-  });
-}
 
 /*test('bytelength', function (t, db) {
   var store = Store(db, { index : 'bytelength' });
