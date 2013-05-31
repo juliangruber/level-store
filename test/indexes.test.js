@@ -22,6 +22,20 @@ test('indexes', function (t, db) {
 test('timestamp', function (t, db) {
   var store = Store(db);
 
+	t.test('index value', function (t) {
+		t.plan(2);
+		var now = Date.now();
+
+		store.append('foo', 'value', function (err) {
+			t.error(err);
+			
+			store.createReadStream('foo', { index: true })
+			.pipe(through(function (chunk) {
+				t.assert(chunk.index >= now && chunk.index < now + 5000);
+			}));
+		});
+	});
+
   t.test('store', function (t) {
     var ws = store.createWriteStream('file');
 
@@ -29,7 +43,7 @@ test('timestamp', function (t, db) {
       var firstIndex;
       var i = 0;
  
-      store.createReadStream('file', { index : true })
+      store.createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
         if (i++ == 0) {
           firstIndex = chunk.index;
@@ -74,13 +88,26 @@ test('timestamp', function (t, db) {
 test('chunks', function (t, db) {
   var store = Store(db, { index : 'chunks' });
 
+	t.test('index value', function (t) {
+		t.plan(2);
+
+		store.append('foo', 'value', function (err) {
+			t.error(err);
+			
+			store.createReadStream('foo', { index: true })
+			.pipe(through(function (chunk) {
+				t.equal(chunk.index, 0);
+			}));
+		});
+	});
+
   t.test('store', function (t) {
     var ws = store.createWriteStream('file');
 
     ws.on('close', function () {
       var i = 0;
       
-      store.createReadStream('file', { index : true })
+      store.createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
         if (i++ == 0) {
           t.equal(chunk.index, 0, 'first chunk');
