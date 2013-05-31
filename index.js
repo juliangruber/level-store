@@ -61,7 +61,12 @@ Store.prototype.createWriteStream = function (key, opts) {
   }
 
   input
-    .pipe(index.addKey())
+    .pipe(through(function (chunk) {
+      this.queue({
+        key: index.newKey(),
+        value: chunk
+      })  
+    }))
     .pipe(ws);
 
   if (opts.append) {
@@ -91,14 +96,22 @@ Store.prototype.createReadStream = function (key, opts) {
 
   // set start
   var start = key + ' ';
-  if (typeof opts.gt != 'undefined') start += opts.gt;
-  else if (typeof opts.gte != 'undefined') start += opts.gte;
+  if (index.modKey && (opts.gt || opts.gte)) {
+    start += index.modKey(opts.gt || opts.gte);
+  } else {
+    if (typeof opts.gt != 'undefined') start += opts.gt;
+    else if (typeof opts.gte != 'undefined') start += opts.gte;
+  }
 
   // set end
   var end = key;
-  if (typeof opts.lt != 'undefined') end += ' ' + opts.lt;
-  else if (typeof opts.lte != 'undefined') end += ' ' + opts.lte;
-  else end += '~';
+  if (index.modKey && (opts.lt || opts.lte)) {
+    end += ' ' + index.modKey(opts.lt || opts.lte);
+  } else {
+    if (typeof opts.lt != 'undefined') end += ' ' + opts.lt;
+    else if (typeof opts.lte != 'undefined') end += ' ' + opts.lte;
+    else end += '~';
+  }
 
   var cfg = { start: start, end: end };
 
