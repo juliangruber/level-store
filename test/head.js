@@ -27,7 +27,7 @@ test('head with index', function (t, db) {
 		Store(db).head('times', { index: true }, function (err, head) {
 			t.error(err);
 			t.ok(head.index);
-			t.equal(head.value, '2 o clock');
+			t.equal(head.data, '2 o clock');
 		});
 	});
 });
