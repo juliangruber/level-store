@@ -21,7 +21,7 @@ test('end', function (t, db) {
     store.createReadStream('file', { index: true })
     .on('data', function (chunk) {
       if (i++ != 2) return;
-      store.createReadStream('file', { to: chunk.index })
+      store.createReadStream('file', { lte: chunk.index })
       .on('data', function (chunk) {
         t.ok(chunk, 'received data');
       });

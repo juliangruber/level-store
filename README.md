@@ -43,7 +43,7 @@ you can do it like this:
 
 ```js
 // first start reading from the stored version
-storage.createReadStream('stream', { live : true }).pipe(someWhere);
+storage.createReadStream('stream', { live: true }).pipe(someWhere);
 // then put your stream into the store
 stream.pipe(storage.createWriteStream('stream'));
 ```
@@ -61,11 +61,11 @@ store.createReadStream('file', { index: true }).on('data', console.log);
 ```
 
 Now you only need store the timestamp of the last read chunk in a variable and you can
-resume reading after an error, passing `{ from: index }`:
+resume reading after an error, passing `{ gt: index }`:
 
 ```js
 store
-  .createReadStream('file', { from: 1363783762087, index: true })
+  .createReadStream('file', { gt: 1363783762087, index: true })
   .on('data', console.log);
 // => { index: 1363783876109, data : <Buffer bb bb> }
 ```
@@ -112,9 +112,10 @@ Possible `options` are:
 
 * `index (Boolean|String)`: If `true`, don't emit raw chunks but rather objects having
 `index` and `data` fields. If a `String`, override the index passed to `Store()`.
-* `from (Number|String)`: When reading, only read data that has been stored after
-position `from`.
-* `to (Number|String)`: Skip everything that has an index that sorts after `to`.
+* `gt (Number|String)`: Emit chunks that have been stored after the given position.
+* `gte (Number|String)`:  Emit chunks that have been stored at or after the given position.
+* `lt (Number|String)`: Emit chunks that have been stored before the given position.
+* `lte (Number|String)`:  Emit chunks that have been stored at or before the given position.
 * `live (Boolean)`: If `true`, the stream will stay open, emitting new data as it comes in.
 
 ### store#createWriteStream(key[, opts])

@@ -60,11 +60,12 @@ Store.prototype.createWriteStream = function (key, opts) {
   }
 
   input
-    .pipe(index.addKey)
+    .pipe(index.addKey())
     .pipe(ws);
 
   if (opts.append) {
-    index.initialize(ready);
+    if (index.initialize) index.initialize(ready);
+		else ready();
   } else {
     this.delete(key, ready);
   }
@@ -80,19 +81,26 @@ Store.prototype.createWriteStream = function (key, opts) {
 Store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
+	// backwards compatibility
+	if (opts.from) opts.gt = opts.from;
+	if (opts.to) opts.lte = opts.to;
+
+	// choose index
   var idx = typeof opts.index == 'string'
     ? opts.index
     : this.index;
   var index = indexes[idx](this.db, key);
 
+	// set start
   var start = key + ' ';
-  if (typeof opts.from != 'undefined') start += index.from
-    ? index.from(opts.from)
-    : opts.from.toString(10);
+  if (typeof opts.gt != 'undefined') start += opts.gt;
+  else if (typeof opts.gte != 'undefined') start += opts.gte;
 
-  var end = typeof opts.to != 'undefined'
-    ? key + ' ' + opts.to
-    : key + '~'
+	// set end
+	var end = key;
+	if (typeof opts.lt != 'undefined') end += ' ' + opts.lt;
+	else if (typeof opts.lte != 'undefined') end += ' ' + opts.lte;
+	else end += '~';
 
   var cfg = { start: start, end: end };
 
@@ -100,30 +108,30 @@ Store.prototype.createReadStream = function (key, opts) {
     ? livefeed(this.db, cfg)
     : this.db.createReadStream(cfg)
 
-  var addIndex = through(function (chunk) {
+  var parseIndex = through(function (chunk) {
     this.queue({
       index: chunk.key.slice(key.length + 1),
       data: chunk.value
     });
   });
 
-  var filter = index.filter
-    ? index.filter(opts)
-    : through(function (chunk) {
-        if (typeof opts.from == 'undefined' || chunk.index > opts.from) {
-          this.queue(chunk);
-        }
-      });
+  var filter = through(function (chunk) {
+		if (typeof opts.lt != 'undefined' && chunk.index >= opts.lt) return;
+		if (typeof opts.lte != 'undefined' && chunk.index > opts.lte) return;
+		if (typeof opts.gt != 'undefined' && chunk.index <= opts.gt) return;
+		if (typeof opts.gte != 'undefined' && chunk.index < opts.gte) return;
+		this.queue(chunk);
+	});
 
   var removeIndex = through(function (chunk) {
     this.queue(chunk.data);
   });
 
-  var res = rs.pipe(addIndex).pipe(filter);
-
-  return opts.index
-    ? res
-    : res.pipe(removeIndex);
+	var res = rs.pipe(parseIndex);
+	if (index.parseIndex) res = res.pipe(index.parseIndex());
+	res = res.pipe(filter);
+	if (!opts.index) res = res.pipe(removeIndex);
+	return res;
 }
 
 Store.prototype.append = function (key, value, cb) {
