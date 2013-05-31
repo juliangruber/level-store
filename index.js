@@ -4,6 +4,7 @@ var livefeed = require('level-livefeed');
 var deleteRange = require('level-delete-range');
 var cap = require('level-capped');
 var peek = require('level-peek');
+var fix = require('level-fix-range');
 var indexes = require('./lib/indexes');
 
 module.exports = Store;
@@ -113,7 +114,11 @@ Store.prototype.createReadStream = function (key, opts) {
     else end += '~';
   }
 
-  var cfg = { start: start, end: end };
+  var cfg = fix({
+    start: start,
+    end: end,
+    reverse: opts.reverse
+  });
 
   var rs = opts.live
     ? livefeed(this.db, cfg)

@@ -117,6 +117,7 @@ Possible `options` are:
 * `lt (Number|String)`: Emit chunks that have been stored before the given position.
 * `lte (Number|String)`:  Emit chunks that have been stored at or before the given position.
 * `live (Boolean)`: If `true`, the stream will stay open, emitting new data as it comes in.
+* `reverse (Boolean)`: If `true`, chunks will be emitted in reverse order.
 
 ### store#createWriteStream(key[, opts])
 
