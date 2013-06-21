@@ -1,7 +1,7 @@
 {
   "name": "level-store",
   "description": "A streaming storage engine based on LevelDB.",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "repository": {
     "type": "git",
     "url": "git://github.com/juliangruber/level-store.git"
@@ -18,12 +18,13 @@
     "level-delete-range": "~0.1.0",
     "level-capped": "~0.0.4",
     "level-peek": "~1.0.6",
-    "level-live-stream": "~1.4.4"
+    "level-live-stream": "~1.4.4",
+    "level-fix-range": "~1.1.2"
   },
   "devDependencies": {
     "tap": "*",
     "rimraf": "~2.1.4",
-    "level": "~0.9.0"
+    "level": "~0.10.0"
   },
   "keywords": [
     "leveldb",
