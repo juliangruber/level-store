@@ -22,6 +22,20 @@ test('indexes', function (t, db) {
 test('timestamp', function (t, db) {
   var store = Store(db);
 
+	t.test('index value', function (t) {
+		t.plan(2);
+		var now = Date.now();
+
+		store.append('foo', 'value', function (err) {
+			t.error(err);
+			
+			store.createReadStream('foo', { index: true })
+			.pipe(through(function (chunk) {
+				t.assert(chunk.index >= now && chunk.index < now + 5000);
+			}));
+		});
+	});
+
   t.test('store', function (t) {
     var ws = store.createWriteStream('file');
 
@@ -29,7 +43,7 @@ test('timestamp', function (t, db) {
       var firstIndex;
       var i = 0;
  
-      store.createReadStream('file', { index : true })
+      store.createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
         if (i++ == 0) {
           firstIndex = chunk.index;
@@ -57,7 +71,7 @@ test('timestamp', function (t, db) {
         if (!index) index = chunk.index;
       }))
       .on('end', function () {
-        store.createReadStream('file', { from: index, index: true })
+        store.createReadStream('file', { gt: index, index: true })
         .pipe(through(function (chunk) {
           t.notEqual(chunk.index, index, 'skips given index');
           t.equal(chunk.data, 'bar');
@@ -74,13 +88,26 @@ test('timestamp', function (t, db) {
 test('chunks', function (t, db) {
   var store = Store(db, { index : 'chunks' });
 
+	t.test('index value', function (t) {
+		t.plan(2);
+
+		store.append('foo', 'value', function (err) {
+			t.error(err);
+			
+			store.createReadStream('foo', { index: true })
+			.pipe(through(function (chunk) {
+				t.equal(chunk.index, 0);
+			}));
+		});
+	});
+
   t.test('store', function (t) {
     var ws = store.createWriteStream('file');
 
     ws.on('close', function () {
       var i = 0;
       
-      store.createReadStream('file', { index : true })
+      store.createReadStream('file', { index: true })
       .pipe(through(function (chunk) {
         if (i++ == 0) {
           t.equal(chunk.index, 0, 'first chunk');
@@ -102,7 +129,7 @@ test('chunks', function (t, db) {
     ws.on('close', function () {
       var data = '';
 
-      store.createReadStream('file', { from: 0, index: true })
+      store.createReadStream('file', { gt: 0, index: true })
       .pipe(through(function (chunk) {
         t.equal(chunk.index, 1, 'second chunk');
         t.end();
@@ -115,94 +142,3 @@ test('chunks', function (t, db) {
   });
 });
 
-/*test('bytelength', function (t, db) {
-  var store = Store(db, { index : 'bytelength' });
-
-  t.test('store', function (t) {
-    var ws = store.createWriteStream('file');
-
-    ws.on('close', function () {
-      var i = 0;
-      
-      store.createReadStream('file', { index : true })
-      .pipe(through(function (chunk) {
-        if (i++ == 0) {
-          t.equal(chunk.index, 3, '3 bytes');
-        } else {
-          t.equal(chunk.index, 6, '6 bytes');
-          t.end();
-        }
-      }))
-    });
-
-    ws.write('foo');
-    ws.write('bar');
-    ws.end();
-  });
-
-  '000000'.split('').forEach(function (_, i) {
-    t.test('resume ' + i, function (t) {
-      console.log('RESUME')
-      var ws = store.createWriteStream('file');
-
-      ws.on('close', function () {
-        var data = '';
-
-        store.createReadStream('file', { from : i })
-        .pipe(through(function (chunk) {
-          data += chunk.data;
-        }))
-        .on('end', function () {
-          t.equal(data, 'foobar'.substr(i - 5));
-          t.end();
-        });
-      });
-
-      ws.write('foo');
-      ws.write('bar');
-      ws.end();
-    });
-  })
-
-  t.test('resume', function (t) {
-    var ws = store.createWriteStream('file');
-
-    ws.on('close', function () {
-      var data = '';
-
-      store.createReadStream('file', { from : 1 })
-      .pipe(through(function (chunk) {
-        data += chunk.data;
-      }))
-      .on('end', function () {
-        t.equal(data, 'obar');
-        t.end();
-      });
-    });
-
-    ws.write('foo');
-    ws.write('bar');
-    ws.end();
-  });
-
-  t.test('resume 2', function (t) {
-    var ws = store.createWriteStream('file');
-
-    ws.on('close', function () {
-      var data = '';
-
-      store.createReadStream('file', { from : 2 })
-      .pipe(through(function (chunk) {
-        data += chunk.data;
-      }))
-      .on('end', function () {
-        t.equal(data, 'bar');
-        t.end();
-      });
-    });
-
-    ws.write('foo');
-    ws.write('bar');
-    ws.end();
-  });
-});*/

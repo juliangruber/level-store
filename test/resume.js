@@ -19,7 +19,7 @@ test('resume', function (t, db) {
     store.createReadStream('file', { index: true })
     .once('data', function (chunk) {
 
-      store.createReadStream('file', { from: chunk.index })
+      store.createReadStream('file', { gt: chunk.index })
       .on('data', function (chunk) {
 
         t.ok(chunk, 'received data');

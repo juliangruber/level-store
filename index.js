@@ -3,6 +3,8 @@ var duplexer = require('duplexer');
 var liveStream = require('level-live-stream');
 var deleteRange = require('level-delete-range');
 var cap = require('level-capped');
+var peek = require('level-peek');
+var fix = require('level-fix-range');
 var indexes = require('./lib/indexes');
 
 module.exports = Store;
@@ -48,7 +50,7 @@ Store.prototype.exists = function (key, cb) {
 Store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
-  var index = indexes[opts.index || this.index](this.db, key);
+  var index = this._getIndex(opts.index, key);
   var input = through().pause();
 
   var ws = this.db.createWriteStream();
@@ -60,11 +62,17 @@ Store.prototype.createWriteStream = function (key, opts) {
   }
 
   input
-    .pipe(index.addKey)
+    .pipe(through(function (chunk) {
+      this.queue({
+        key: index.newKey(),
+        value: chunk
+      })  
+    }))
     .pipe(ws);
 
   if (opts.append) {
-    index.initialize(ready);
+    if (index.initialize) index.initialize(ready);
+    else ready();
   } else {
     this.delete(key, ready);
   }
@@ -80,51 +88,99 @@ Store.prototype.createWriteStream = function (key, opts) {
 Store.prototype.createReadStream = function (key, opts) {
   if (!opts) opts = {};
 
-  var idx = typeof opts.index == 'string'
-    ? opts.index
-    : this.index;
-  var index = indexes[idx](this.db, key);
+  // backwards compatibility
+  if (opts.from) opts.gt = opts.from;
+  if (opts.to) opts.lte = opts.to;
 
+  // choose index
+  var index = this._getIndex(opts.index, key);
+
+  // set start
   var start = key + ' ';
-  if (typeof opts.from != 'undefined') start += index.from
-    ? index.from(opts.from)
-    : opts.from.toString(10);
+  if (index.modKey && (opts.gt || opts.gte)) {
+    start += index.modKey(opts.gt || opts.gte);
+  } else {
+    if (typeof opts.gt != 'undefined') start += opts.gt;
+    else if (typeof opts.gte != 'undefined') start += opts.gte;
+  }
 
-  var end = typeof opts.to != 'undefined'
-    ? key + ' ' + opts.to
-    : key + '~'
+  // set end
+  var end = key;
+  if (index.modKey && (opts.lt || opts.lte)) {
+    end += ' ' + index.modKey(opts.lt || opts.lte);
+  } else {
+    if (typeof opts.lt != 'undefined') end += ' ' + opts.lt;
+    else if (typeof opts.lte != 'undefined') end += ' ' + opts.lte;
+    else end += '~';
+  }
 
-  var cfg = { start: start, end: end };
+  var cfg = fix({
+    start: start,
+    end: end,
+    reverse: opts.reverse
+  });
 
   var rs = opts.live
     ? liveStream(this.db, cfg)
     : this.db.createReadStream(cfg)
 
-  var addIndex = through(function (chunk) {
-    this.queue({
-      index: chunk.key.slice(key.length + 1),
-      data: chunk.value
-    });
+  var filter = through(function (chunk) {
+    if (typeof opts.lt != 'undefined' && chunk.index >= opts.lt) return;
+    if (typeof opts.lte != 'undefined' && chunk.index > opts.lte) return;
+    if (typeof opts.gt != 'undefined' && chunk.index <= opts.gt) return;
+    if (typeof opts.gte != 'undefined' && chunk.index < opts.gte) return;
+    this.queue(chunk);
   });
-
-  var filter = index.filter
-    ? index.filter(opts)
-    : through(function (chunk) {
-        if (typeof opts.from == 'undefined' || chunk.index > opts.from) {
-          this.queue(chunk);
-        }
-      });
 
   var removeIndex = through(function (chunk) {
     this.queue(chunk.data);
   });
 
-  var res = rs.pipe(addIndex).pipe(filter);
-
-  return opts.index
-    ? res
-    : res.pipe(removeIndex);
+  var res = rs.pipe(through(function (chunk) {
+    this.queue(parseIndex(key, chunk));
+  }));
+  if (index.parseIndex) res = res.pipe(through(function (chunk) {
+    this.queue(index.parseIndex(chunk));
+  }));
+  res = res.pipe(filter);
+  if (!opts.index) res = res.pipe(removeIndex);
+  return res;
 }
+
+function parseIndex (key, chunk) {
+  return {
+    index: chunk.key.slice(key.length + 1),
+    data: chunk.value
+  };
+}
+
+Store.prototype._getIndex = function (name, key) {
+  var idx = typeof name == 'string'
+    ? name
+    : this.index;
+  return indexes[idx](this.db, key);
+}
+
+Store.prototype.head = function (key, opts, cb) {
+  var self = this;
+  if (typeof opts == 'function') {
+    cb = opts;
+    opts = {};
+  }
+  var index = this._getIndex(opts.index);
+
+  peek.last(self.db, {
+    start: key + ' ',
+    end: key + '~'
+  }, function (err, _key, _value) {
+    if (err) return cb(err);
+
+    var chunk = parseIndex(key, { key: _key, value: _value });
+    if (index.parseIndex) chunk = index.parseIndex(chunk);
+    if (!opts.index) chunk = chunk.data;
+    cb(null, chunk);
+  });
+};
 
 Store.prototype.append = function (key, value, cb) {
   if (!cb) cb = function () {};
@@ -133,4 +189,5 @@ Store.prototype.append = function (key, value, cb) {
   ws.on('error', cb);
   ws.write(value);
   ws.end();
-}
+};
+

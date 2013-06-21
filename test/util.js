@@ -11,6 +11,9 @@ function test (name, cb) {
     path += Math.random().toString(16).slice(2)
     path += '-level-store-test';
 
-    cb(t, levelup(path));
+		levelup(path, function (err, db) {
+			if (err) throw err;
+			cb(t, db);
+		});
   });
 }
