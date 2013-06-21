@@ -1,6 +1,6 @@
 var through = require('through');
 var duplexer = require('duplexer');
-var livefeed = require('level-livefeed');
+var liveStream = require('level-live-stream');
 var deleteRange = require('level-delete-range');
 var cap = require('level-capped');
 var indexes = require('./lib/indexes');
@@ -97,7 +97,7 @@ Store.prototype.createReadStream = function (key, opts) {
   var cfg = { start: start, end: end };
 
   var rs = opts.live
-    ? livefeed(this.db, cfg)
+    ? liveStream(this.db, cfg)
     : this.db.createReadStream(cfg)
 
   var addIndex = through(function (chunk) {
