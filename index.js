@@ -132,6 +132,12 @@ Store.prototype.createReadStream = function (key, opts) {
     this.queue(chunk);
   });
 
+  var received = 0;
+  var limit = through(function (chunk) {
+    if (++received == limit) rs.destroy();
+    else this.queue(chunk);
+  });
+
   var removeIndex = through(function (chunk) {
     this.queue(chunk.data);
   });
