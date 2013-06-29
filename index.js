@@ -134,7 +134,7 @@ Store.prototype.createReadStream = function (key, opts) {
 
   var received = 0;
   var limit = through(function (chunk) {
-    if (++received == limit) rs.destroy();
+    if (++received >= limit) rs.destroy();
     else this.queue(chunk);
   });
 
