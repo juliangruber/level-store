@@ -4,7 +4,7 @@ var level = require('level');
 var fs = require('fs');
 var rimraf = require('rimraf');
 
-// ~1.35ms
+// ~1.32ms
 
 rimraf.sync(__dirname + '/.db');
 level(__dirname + '/.db', { valueEncoding: 'binary' }, function (err, db) {

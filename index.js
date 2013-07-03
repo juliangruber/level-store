@@ -51,24 +51,21 @@ Store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
   var index = this._getIndex(opts.index, key);
-  var input = through().pause();
-
+  var input = through(function (chunk) {
+    this.queue({
+      key: index.newKey(),
+      value: chunk
+    });
+  }).pause();
   var ws = this.db.createWriteStream();
+
   var dpl = duplexer(input, ws);
+  input.pipe(ws);
 
   if (typeof opts.capped != 'undefined') {
     var capped = cap(this.db, key, opts.capped);
     ws.on('end', capped.end.bind(capped));
   }
-
-  input
-    .pipe(through(function (chunk) {
-      this.queue({
-        key: index.newKey(),
-        value: chunk
-      })  
-    }))
-    .pipe(ws);
 
   if (opts.append) {
     if (index.initialize) index.initialize(ready);
@@ -165,7 +162,7 @@ function parseIndex (key, chunk) {
 }
 
 Store.prototype._getIndex = function (name, key) {
-  var idx = typeof name == 'string'
+  var idx = typeof name === 'string'
     ? name
     : this.index;
   return indexes[idx](this.db, key);
