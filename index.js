@@ -133,7 +133,7 @@ Store.prototype.createReadStream = function (key, opts) {
       && (typeof opts.gt  == 'undefined' || idx >  opts.gt)
       && (typeof opts.gte == 'undefined' || idx >= opts.gte)
     ) {
-      if (typeof opts.limit != 'undefined' && ++received >= opts.limit) {
+      if (typeof opts.limit != 'undefined' && received++ >= opts.limit) {
         rs.destroy();
       } else {
         this.queue(opts.index? chunk : chunk.data);
