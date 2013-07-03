@@ -124,32 +124,36 @@ Store.prototype.createReadStream = function (key, opts) {
     ? liveStream(this.db, cfg)
     : this.db.createReadStream(cfg)
 
-  var filter = through(function (chunk) {
+  var res = rs.pipe(through(function (chunk) {
+    this.queue(parseIndex(key, chunk));
+  }));
+
+  if (index.parseIndex) res = res.pipe(through(function (chunk) {
+    this.queue(index.parseIndex(chunk));
+  }));
+
+  res = res.pipe(through(function (chunk) {
     if (typeof opts.lt != 'undefined' && chunk.index >= opts.lt) return;
     if (typeof opts.lte != 'undefined' && chunk.index > opts.lte) return;
     if (typeof opts.gt != 'undefined' && chunk.index <= opts.gt) return;
     if (typeof opts.gte != 'undefined' && chunk.index < opts.gte) return;
     this.queue(chunk);
-  });
-
-  var received = 0;
-  var limit = through(function (chunk) {
-    if (++received >= limit) rs.destroy();
-    else this.queue(chunk);
-  });
-
-  var removeIndex = through(function (chunk) {
-    this.queue(chunk.data);
-  });
-
-  var res = rs.pipe(through(function (chunk) {
-    this.queue(parseIndex(key, chunk));
   }));
-  if (index.parseIndex) res = res.pipe(through(function (chunk) {
-    this.queue(index.parseIndex(chunk));
-  }));
-  res = res.pipe(filter);
-  if (!opts.index) res = res.pipe(removeIndex);
+
+  if (typeof opts.limit != 'undefined') {
+    var received = 0;
+    res = res.pipe(through(function (chunk) {
+      if (++received >= opts.limit) rs.destroy();
+      else this.queue(chunk);
+    }));
+  }
+
+  if (!opts.index) {
+    res = res.pipe(through(function (chunk) {
+      this.queue(chunk.data);
+    }));
+  }
+
   return res;
 }
 
