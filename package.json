@@ -23,8 +23,9 @@
   },
   "devDependencies": {
     "tap": "*",
-    "rimraf": "~2.1.4",
-    "level": "~0.10.0"
+    "rimraf": "~2.2.0",
+    "level": "~0.10.0",
+    "ben": "0.0.0"
   },
   "keywords": [
     "leveldb",
