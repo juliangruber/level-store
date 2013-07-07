@@ -18,6 +18,15 @@ function Store (db, opts) {
 }
 
 Store.prototype.delete = function (key, cb) {
+  var self = this;
+  self.exists(key, function (err, exists) {
+    if (err) return cb(err);
+    if (!exists) return cb(new Error('Stream not found.'));
+    self.reset(key, cb);
+  });
+};
+
+Store.prototype.reset = function (key, cb) {
   deleteRange(this.db, {
     start : key + ' ',
     end : key + '~'
