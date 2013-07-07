@@ -80,7 +80,7 @@ Store.prototype.createWriteStream = function (key, opts) {
     if (index.initialize) index.initialize(ready);
     else ready();
   } else {
-    this.delete(key, ready);
+    this.reset(key, ready);
   }
 
   function ready (err) {
