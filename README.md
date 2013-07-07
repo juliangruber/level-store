@@ -134,7 +134,13 @@ rather than replaced.
 
 ### store#delete(key[, cb])
 
-Delete everything stored under `key`.
+Delete everything stored under `key`. _Returns_ an error if nothing was stored
+under `key`.
+
+### store#reset(key[, cb])
+
+Delete everything stored under `key`. _Doesn't return_ an error if nothing was stored
+under `key`.
 
 ### store#exists(key, cb)
 
