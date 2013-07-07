@@ -132,6 +132,14 @@ rather than replaced.
 * `capped (Number)`: If set, cap the stream to `x` chunks.
 * `index (String)`: Override the index passed to `Store()`.
 
+### store#createKeyStream(opts)
+
+A readable stream that emits all the keys of all streams that are stored.
+
+Possible `options` are:
+
+* `reverse (Boolean)`
+
 ### store#get(key[, opts], cb)
 
 Async version of `createReadStream`.

@@ -56,6 +56,45 @@ Store.prototype.exists = function (key, cb) {
   keys.on('error', cb);
 };
 
+Store.prototype.createKeyStream = function (opts) {
+  if (!opts) opts = {};
+  var method = opts.reverse
+    ? 'last'
+    : 'first';
+
+  var tr = through();
+  var db = this.db;
+
+  (function next (key) {
+    var cfg = {};
+    if (key) cfg[opts.reverse? 'end': 'start'] = key;
+    peek[method](db, cfg, function (err, _key) {
+      if (err) {
+        if (err.message == 'range not found') return tr.end();
+        tr.emit('error', err);
+      }
+
+      var segs = _key.split(' ');
+      segs.pop();
+      _key = segs.join(' ');
+
+      tr.queue(_key);
+
+      if (opts.reverse) {
+        var k = _key + '';
+        k = k.substr(0, k.length - 2)
+          + String.fromCharCode(k.charCodeAt(k.length - 1) - 1)
+          + '~';
+        next(k); 
+      } else {
+        next(_key + '!');
+      }
+    });
+  })();
+
+  return tr;  
+};
+
 Store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
