@@ -156,8 +156,8 @@ Check if `key` exists and call `cb` with `(err, exists)`.
 
 ### store#head(key[, opts], cb)
 
-Get the last chunk stored under "key". "opts" are treated like in "db#createReadStream".
-"cb" gets called with "(err, chunk)".
+Get the last chunk stored under `key`. `opts` are treated like in
+`db#createReadStream`. `cb` gets called with `(err, chunk)`.
 
 ### store#append(key, value[, opts][, cb])
 
