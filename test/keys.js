@@ -2,7 +2,7 @@ var test = require('./util');
 var Store = require('..');
 
 test('keys', function (t, db) {
-  t.plan(2);
+  t.plan(4);
   var store = Store(db);
 
   store.set('a', ' ', function (err) {
