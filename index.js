@@ -149,21 +149,40 @@ Store.prototype.createReadStream = function (key, opts) {
       }
     }
   }));
-}
+};
 
-function parseIndex (key, chunk) {
-  return {
-    index: chunk.key.slice(key.length + 1),
-    data: chunk.value
-  };
-}
+Store.prototype.get = function (key, opts, cb) {
+  if (typeof opts == 'function') {
+    cb = opts;
+    opts = {};
+  }
+  var data;
+  var called = false;
+  var read = false;
 
-Store.prototype._getIndex = function (name, key) {
-  var idx = typeof name === 'string'
-    ? name
-    : this.index;
-  return indexes[idx](this.db, key);
-}
+  this.createReadStream(key, opts)
+    .on('error', done)
+    .on('end', done)
+    .on('data', function (d) {
+      read = true;
+      if (Buffer.isBuffer(d)) {
+        if (!data) data = [];
+        data.push(d);
+      } else {
+        if (!data) data = '';
+        data += d;
+      }
+    });
+
+  function done (err) {
+    if (called) return;
+    called = true;
+    if (err) return cb(err);
+    if (!read) return cb(new Error('Stream not found.'));
+    if (Array.isArray(data)) data = Buffer.concat(data);
+    cb(null, data);
+  }
+};
 
 Store.prototype.head = function (key, opts, cb) {
   var self = this;
@@ -195,3 +214,16 @@ Store.prototype.append = function (key, value, cb) {
   ws.end();
 };
 
+function parseIndex (key, chunk) {
+  return {
+    index: chunk.key.slice(key.length + 1),
+    data: chunk.value
+  };
+};
+
+Store.prototype._getIndex = function (name, key) {
+  var idx = typeof name === 'string'
+    ? name
+    : this.index;
+  return indexes[idx](this.db, key);
+};

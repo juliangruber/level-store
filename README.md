@@ -132,6 +132,10 @@ rather than replaced.
 * `capped (Number)`: If set, cap the stream to `x` chunks.
 * `index (String)`: Override the index passed to `Store()`.
 
+### store#get(key[, opts], cb)
+
+Async version of `createReadStream`.
+
 ### store#delete(key[, cb])
 
 Delete everything stored under `key`. _Returns_ an error if nothing was stored
