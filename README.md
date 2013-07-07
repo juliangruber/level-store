@@ -136,6 +136,10 @@ rather than replaced.
 
 Async version of `createReadStream`.
 
+### store#set(key, value[, opts], cb)
+
+Async version of `createWriteStream`.
+
 ### store#delete(key[, cb])
 
 Delete everything stored under `key`. _Returns_ an error if nothing was stored

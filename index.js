@@ -205,13 +205,28 @@ Store.prototype.head = function (key, opts, cb) {
   });
 };
 
-Store.prototype.append = function (key, value, cb) {
+Store.prototype.set = function (key, value, opts, cb) {
+  if (typeof opts == 'function') {
+    cb = opts;
+    opts = {};
+  }
+  if (!opts) opts = {};
   if (!cb) cb = function () {};
-  var ws = this.createWriteStream(key, { append : true });
+  var ws = this.createWriteStream(key, opts);
   ws.on('close', cb);
   ws.on('error', cb);
   ws.write(value);
   ws.end();
+};
+
+Store.prototype.append = function (key, value, opts, cb) {
+  if (typeof opts == 'function') {
+    cb = opts;
+    opts = {};
+  }
+  if (!opts) opts = {};
+  opts.append = true;
+  this.set(key, value, opts, cb);
 };
 
 function parseIndex (key, chunk) {
