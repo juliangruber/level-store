@@ -148,6 +148,10 @@ Async version of `createReadStream`.
 
 Async version of `createWriteStream`.
 
+### store#keys(cb)
+
+Async version of `createKeyStream`, without reverse sorting capability.
+
 ### store#delete(key[, cb])
 
 Delete everything stored under `key`. _Returns_ an error if nothing was stored

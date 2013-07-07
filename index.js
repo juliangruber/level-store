@@ -95,6 +95,24 @@ Store.prototype.createKeyStream = function (opts) {
   return tr;  
 };
 
+Store.prototype.keys = function (cb) {
+  var keys = [];
+  var called = false;
+  this.createKeyStream()
+    .on('data', function (key) {
+      keys.push(key);
+    })
+    .on('error', done)
+    .on('end', done);
+
+  function done (err) {
+    if (called) return;
+    called = true;
+    if (err) cb(err);
+    else cb(null, keys);
+  }
+};
+
 Store.prototype.createWriteStream = function (key, opts) {
   if (!opts) opts = {};
 
