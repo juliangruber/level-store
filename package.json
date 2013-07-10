@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "through": "~2.2.7",
-    "duplexer": "~0.0.3",
+    "duplexer": "~0.1.1",
     "monotonic-timestamp": "~0.0.8",
     "level-delete-range": "~0.1.0",
     "level-capped": "~0.0.4",
