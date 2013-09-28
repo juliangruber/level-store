@@ -180,7 +180,8 @@ Store.prototype.createReadStream = function (key, opts) {
   var cfg = fix({
     start: start,
     end: end,
-    reverse: opts.reverse
+    reverse: opts.reverse,
+    valueEncoding: opts.valueEncoding
   });
 
   var rs = opts.live
