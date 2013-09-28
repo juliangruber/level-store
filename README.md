@@ -119,6 +119,7 @@ Possible `options` are:
 * `live (Boolean)`: If `true`, the stream will stay open, emitting new data as it comes in.
 * `reverse (Boolean)`: If `true`, chunks will be emitted in reverse order.
 * `limit (Number)`: Receive max. `limit` chunks.
+* `valueEncoding (String)`: Use a specific encoding for values.
 
 ### store#createWriteStream(key[, opts])
 
