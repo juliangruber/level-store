@@ -180,9 +180,9 @@ Store.prototype.createReadStream = function (key, opts) {
   var cfg = fix({
     start: start,
     end: end,
-    reverse: opts.reverse,
-    valueEncoding: opts.valueEncoding
+    reverse: opts.reverse
   });
+  if (opts.valueEncoding) cfg.valueEncoding = opts.valueEncoding;
 
   var rs = opts.live
     ? liveStream(this.db, cfg)
