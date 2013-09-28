@@ -63,6 +63,20 @@ test('lte', function (t, db) {
 		});
 });
 
+test('encoding', function (t, db) {
+	t.plan(2);
+
+	db.batch()
+		.put('o 0', '0')
+		.write(function (err) {
+			t.error(err);
+
+			Store(db).createReadStream('o', { valueEncoding: 'binary' }).on('data', function (d) {
+				t.ok(Buffer.isBuffer(d));
+			});
+		});
+});
+
 test('integration', function (t, db) {
 	t.plan(2);
 
