@@ -29,17 +29,14 @@ test('backward key-stream', function (t, db) {
     t.error(err);
     store.set('b', ' ', function (err) {
       t.error(err);
-      store.set('c', ' ', function (err) {
-        t.error(err);
-        var keys = [];
-        store.createKeyStream({ reverse: true })
-          .on('data', function (key) {
-            keys.push(key);
-          })
-          .on('end', function () {
-            t.deepEqual(keys, ['b', 'a']);
-          });
-      });
+      var keys = [];
+      store.createKeyStream({ reverse: true })
+        .on('data', function (key) {
+          keys.push(key);
+        })
+        .on('end', function () {
+          t.deepEqual(keys, ['b', 'a']);
+        });
     });
   });
 });
