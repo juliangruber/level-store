@@ -123,7 +123,7 @@ Store.prototype.createWriteStream = function (key, opts) {
       value: chunk
     });
   }).pause();
-  var ws = this.db.createWriteStream();
+  var ws = this.db.createWriteStream(opts);
 
   var dpl = duplexer(input, ws);
   input.pipe(ws);

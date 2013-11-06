@@ -1,7 +1,8 @@
 var Store = require('..');
 var os = require('os');
+var level = require('level');
 
-var store = Store(os.tmpDir() + '/level-store-capped');
+var store = Store(level(os.tmpDir() + '/level-store-capped'));
 
 var ws = store.createWriteStream('updates', { capped : 2 });
 
