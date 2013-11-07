@@ -1,8 +1,9 @@
 var Store = require('..');
 var os = require('os');
 var fs = require('fs');
+var level = require('level');
 
-var store = Store(os.tmpDir() + '/level-store-example');
+var store = Store(level(os.tmpDir() + '/level-store-example'));
 
 fs.createReadStream(__dirname + '/file.txt')
   .pipe(store.createWriteStream('file'))
