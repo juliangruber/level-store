@@ -24,7 +24,7 @@
   "devDependencies": {
     "tap": "*",
     "rimraf": "~2.2.0",
-    "level": "~0.10.0",
+    "level": "~0.18.0",
     "ben": "0.0.0"
   },
   "keywords": [
