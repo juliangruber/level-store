@@ -18,7 +18,7 @@
     "level-delete-range": "~0.1.0",
     "level-capped": "~0.0.4",
     "level-peek": "~1.0.6",
-    "level-live-stream": "~1.4.4",
+    "level-live-stream": "1.4.8",
     "level-fix-range": "~1.1.2"
   },
   "devDependencies": {
