@@ -9,8 +9,6 @@ A streaming storage engine based on [LevelDB](https://github.com/rvagg/node-leve
 * **resuming** reads when something failed
 * **in-process**
 
-![LevelDB Logo](https://twimg0-a.akamaihd.net/profile_images/3360574989/92fc472928b444980408147e5e5db2fa_bigger.png)
-
 [![Build Status](https://travis-ci.org/juliangruber/level-store.png)](https://travis-ci.org/juliangruber/level-store)
 
 Only need in-memory persistence and no resuming? Check out [enstore](https://github.com/juliangruber/enstore).
