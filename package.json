@@ -12,20 +12,21 @@
     "test": "tap test/*.js"
   },
   "dependencies": {
-    "through": "~2.2.7",
     "duplexer": "~0.1.1",
-    "monotonic-timestamp": "~0.0.8",
-    "level-delete-range": "~0.1.0",
     "level-capped": "~0.0.4",
-    "level-peek": "~1.0.6",
+    "level-delete-range": "~0.1.0",
+    "level-fix-range": "~1.1.2",
     "level-live-stream": "1.4.8",
-    "level-fix-range": "~1.1.2"
+    "level-peek": "~1.0.6",
+    "level-ws": "0.0.1",
+    "monotonic-timestamp": "~0.0.8",
+    "through": "~2.2.7"
   },
   "devDependencies": {
-    "tap": "*",
+    "ben": "0.0.0",
+    "level": "^1.4.0",
     "rimraf": "~2.2.0",
-    "level": "~0.18.0",
-    "ben": "0.0.0"
+    "tap": "*"
   },
   "keywords": [
     "leveldb",

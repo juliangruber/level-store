@@ -6,6 +6,7 @@ var cap = require('level-capped');
 var peek = require('level-peek');
 var fix = require('level-fix-range');
 var indexes = require('./lib/indexes');
+var WriteStream = require('level-ws').WriteStream;
 
 module.exports = Store;
 
@@ -123,7 +124,7 @@ Store.prototype.createWriteStream = function (key, opts) {
       value: chunk
     });
   }).pause();
-  var ws = this.db.createWriteStream(opts);
+  var ws = new WriteStream(opts, this.db);
 
   var dpl = duplexer(input, ws);
   input.pipe(ws);
