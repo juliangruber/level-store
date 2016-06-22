@@ -10,15 +10,16 @@ test('capped', function (t, db) {
   ws.write('baz');
   ws.end();
   ws.on('close', function () {
+    setTimeout(function () {
+      var data = [];
 
-    var data = [];
-
-    store
-      .createReadStream('key')
-      .on('data', function (d) { data.push(d) })
-      .on('end', function () {
-        t.deepEqual(data, ['bar', 'baz'], 'deleted first');
-        t.end();
-      });
+      store
+        .createReadStream('key')
+        .on('data', function (d) { data.push(d) })
+        .on('end', function () {
+          t.deepEqual(data, ['bar', 'baz'], 'deleted first');
+          t.end();
+        });
+    }, 500);
   });
 });
