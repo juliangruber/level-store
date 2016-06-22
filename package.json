@@ -1,7 +1,7 @@
 {
   "name": "level-store",
   "description": "A streaming storage engine based on LevelDB.",
-  "version": "3.10.1",
+  "version": "3.11.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/juliangruber/level-store.git"
