@@ -83,6 +83,8 @@ test('timestamp', function (t, db) {
     ws.write('bar');
     ws.end();
   });
+
+  t.end();
 });
 
 test('chunks', function (t, db) {
@@ -140,5 +142,7 @@ test('chunks', function (t, db) {
     ws.write('bar');
     ws.end();
   });
+
+  t.end();
 });
 
