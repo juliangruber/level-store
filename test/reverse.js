@@ -12,7 +12,6 @@ test('reverse', function (t, db) {
     console.log('written')
     var i = 0;
     store.createReadStream('reverse', { reverse: true }).on('data', function (d) {
-      console.log('d', d)
       t.equal(d, [ 'last', 'first' ][i++]);
     });
   });
