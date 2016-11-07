@@ -15,17 +15,17 @@
     "duplexer": "~0.1.1",
     "level-capped": "~0.0.4",
     "level-delete-range": "~0.1.0",
-    "level-fix-range": "~1.1.2",
-    "level-live-stream": "1.4.8",
-    "level-peek": "~1.0.6",
+    "level-fix-range": "~2.0.0",
+    "level-live-stream": "1.4.12",
+    "level-peek": "~2.0.2",
     "level-ws": "0.0.1",
     "monotonic-timestamp": "~0.0.8",
-    "through": "~2.2.7"
+    "through": "~2.3.8"
   },
   "devDependencies": {
     "ben": "0.0.0",
     "level": "^1.4.0",
-    "rimraf": "~2.2.0",
+    "rimraf": "~2.5.4",
     "tap": "*"
   },
   "keywords": [
